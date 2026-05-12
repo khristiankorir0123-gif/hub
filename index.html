@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        :root { --bg: #050505; --card: #121212; --accent: #007aff; }
+        body { background: var(--bg); color: white; font-family: -apple-system, sans-serif; padding: 20px; margin: 0; overflow: hidden; }
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(3, 30vh); gap: 15px; }
+        
+        /* Glassmorphism Cards */
+        .card { background: var(--card); border-radius: 24px; border: 1px solid #222; overflow: hidden; position: relative; }
+        .card:focus-within { border-color: var(--accent); box-shadow: 0 0 20px rgba(0,122,255,0.3); }
+
+        .welcome-section { grid-column: span 2; padding: 30px; background: linear-gradient(135deg, #121212 0%, #1a1a1a 100%); }
+        .news-tile { grid-column: span 2; grid-row: span 2; }
+        .sports-tile { grid-column: span 1; grid-row: span 2; }
+        
+        /* The "Browser-in-Browser" Look */
+        iframe { width: 100%; height: 100%; border: none; }
+        
+        .nav-btn { display: block; padding: 15px; background: #1a1a1a; color: white; text-decoration: none; border-radius: 12px; margin-top: 10px; text-align: center; }
+        .nav-btn:hover { background: var(--accent); }
+    </style>
+</head>
+<body>
+    <div class="grid">
+        <!-- Greeting & Cloud -->
+        <div class="card welcome-section">
+            <h1 id="greeting">Welcome</h1>
+            <p id="clock">00:00</p>
+            <a href="https://onedrive.live.com" class="nav-btn" tabindex="1">Open OneDrive</a>
+            <a href="index.html" class="nav-btn" style="background: #333;">Switch Account</a>
+        </div>
+
+        <!-- Sports Tile (Live Scores) -->
+        <div class="card sports-tile">
+            <iframe src="https://www.livescore.com/en/football/"></iframe>
+        </div>
+
+        <!-- News Tile (Browser in Browser) -->
+        <div class="card news-tile">
+            <iframe src="https://m.active.social/news"></iframe>
+        </div>
+
+        <!-- Customization/Photo Area -->
+        <div class="card" style="grid-column: span 1; background: url('YOUR_IMAGE_URL') center/cover;">
+            <div style="background: rgba(0,0,0,0.4); height: 100%; padding: 10px;">Your Workspace</div>
+        </div>
+    </div>
+
+    <script>
+        // Set Personal Greeting
+        const user = localStorage.getItem('currentUser') || 'Guest';
+        document.getElementById('greeting').innerText = `Welcome, ${user}`;
+
+        // Live Clock
+        function updateTime() {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+        setInterval(updateTime, 1000); updateTime();
+    </script>
+</body>
+</html>
