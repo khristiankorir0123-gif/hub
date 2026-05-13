@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>K-OS | Hub</title>
+    <!-- Adding SortableJS for smooth dragging -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
         :root { --accent: #007aff; --glass: rgba(255, 255, 255, 0.05); }
         
@@ -35,44 +37,64 @@
             flex-direction: column;
             position: relative;
             overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        /* Top Left: Profile & Time */
+        /* Apple-style Wiggle Animation */
+        @keyframes wiggle {
+            0% { transform: rotate(-1deg); }
+            50% { transform: rotate(1.5deg); }
+            100% { transform: rotate(-1deg); }
+        }
+
+        .editing .tile {
+            animation: wiggle 0.3s infinite ease-in-out;
+            cursor: grab;
+            border-color: #444;
+        }
+
+        .editing .tile:active { cursor: grabbing; }
+
+        /* Disable iframe interactions while editing so we can drag them */
+        .editing iframe, .editing rssapp-carousel {
+            pointer-events: none;
+        }
+
+        /* Ghost element while dragging */
+        .sortable-ghost {
+            opacity: 0.3;
+            transform: scale(0.9);
+        }
+
+        /* Layout styles */
         .profile-section { padding: 25px; display: flex; align-items: center; justify-content: space-between; }
         #clock { font-size: 2.8rem; font-weight: 700; line-height: 1; }
         #live-date { color: #888; font-size: 1rem; margin-top: 5px; }
         
-        /* Top Center: Apps */
-        .apps-section { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; border: none; background: transparent; }
+        .apps-section { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; border: none !important; background: transparent !important; animation: none !important; }
+        
         .app-btn {
             background: #111; border: 1px solid #222; border-radius: 24px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-decoration: none; color: white; transition: 0.3s;
-        }
-        .app-btn:hover { border-color: var(--accent); background: #161616; transform: translateY(-3px); }
-
-        /* Widgets */
-        .widget-header { 
-            padding: 20px; color: var(--accent); font-weight: bold; font-size: 0.8rem; 
-            text-transform: uppercase; letter-spacing: 1px;
+            text-decoration: none; color: white; transition: 0.3s; height: 100%;
         }
 
+        .widget-header { padding: 20px; color: var(--accent); font-weight: bold; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
         .content-fill { flex: 1; width: 100%; overflow: hidden; }
-
-        /* Calendar Filter for Dark Mode */
         .cal-frame { filter: invert(0.9) hue-rotate(180deg) brightness(0.8); width: 100%; height: 100%; border: none; }
-
-        .switch-btn { 
+        
+        .switch-btn, .edit-toggle-btn { 
             background: rgba(255,255,255,0.1); border: none; color: white; 
             padding: 8px 16px; border-radius: 12px; cursor: pointer; font-size: 0.8rem;
         }
+        .editing .edit-toggle-btn { background: var(--accent); }
     </style>
 </head>
 <body>
 
-<div class="bento-grid">
-    <!-- 1. Profile & Time (Top Left) -->
-    <div class="tile profile-section">
+<div class="bento-grid" id="main-grid">
+    <!-- 1. Profile & Time -->
+    <div class="tile profile-section" data-id="1">
         <div style="display: flex; align-items: center;">
             <img id="user-img" src="" style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--accent); margin-right: 20px; object-fit: cover;">
             <div>
@@ -83,39 +105,34 @@
         <button class="switch-btn" onclick="location.href='https://khristiankorir0123-gif.github.io/login-screen/'">Switch</button>
     </div>
 
-    <!-- 2. Apps (Top Center) -->
-    <div class="tile apps-section">
-        <a href="https://onedrive.live.com" class="app-btn">
-            <span style="font-size: 1.5rem; margin-bottom: 5px;">☁️</span>OneDrive
-        </a>
-        <a href="https://vidbox.de" class="app-btn">
-            <span style="font-size: 1.5rem; margin-bottom: 5px;">🎬</span>Vidbox
-        </a>
+    <!-- 2. Apps -->
+    <div class="tile apps-section" data-id="2">
+        <a href="https://onedrive.live.com" class="app-btn"><span>☁️</span>OneDrive</a>
+        <a href="https://vidbox.de" class="app-btn"><span>🎬</span>Vidbox</a>
     </div>
 
-    <!-- 3. Edit Control (Top Right) -->
-    <div class="tile" style="justify-content: center; align-items: center; background: rgba(0,122,255,0.03);">
-        <button class="app-btn" style="width: 70%; height: 60px;" onclick="alert('Edit Mode: Drag tiles to rearrange')">⚙️ Edit Hub</button>
+    <!-- 3. Edit Control -->
+    <div class="tile" data-id="3" style="justify-content: center; align-items: center; background: rgba(0,122,255,0.03);">
+        <button class="edit-toggle-btn" onclick="toggleEditMode()">⚙️ Edit Hub</button>
     </div>
 
-    <!-- 4. Score Feed (Bottom Left) -->
-    <div class="tile">
+    <!-- 4. Score Feed -->
+    <div class="tile" data-id="4">
         <div class="widget-header">Live Scores</div>
         <div class="content-fill" id="match-list">
-            <div style="padding: 20px; color: #444;">Connecting to Sportmonks...</div>
+            <div style="padding: 20px; color: #444;">Live Data restricted.</div>
         </div>
     </div>
 
-    <!-- 5. Large Calendar (Bottom Center) -->
-    <div class="tile">
+    <!-- 5. Large Calendar -->
+    <div class="tile" data-id="5">
         <iframe src="https://calendar.google.com/calendar/embed?src=en.dutch%23holiday%40group.v.calendar.google.com&ctz=Europe%2FAmsterdam" class="cal-frame"></iframe>
     </div>
 
-    <!-- 6. News Carousel (Bottom Right) -->
-    <div class="tile">
+    <!-- 6. News Carousel -->
+    <div class="tile" data-id="6">
         <div class="widget-header">Global Headlines</div>
         <div class="content-fill">
-            <!-- RSS.app Widget Integrated -->
             <rssapp-carousel id="tgVNLlUheA584JKg"></rssapp-carousel>
             <script src="https://widget.rss.app/v1/carousel.js" type="text/javascript" async></script>
         </div>
@@ -123,43 +140,49 @@
 </div>
 
 <script>
-    // Configuration
-    const SPORTMONKS_TOKEN = 'YOUR_ACTUAL_TOKEN_HERE';
+    let isEditing = false;
+    let sortable;
+
+    function toggleEditMode() {
+        const grid = document.getElementById('main-grid');
+        const btn = document.querySelector('.edit-toggle-btn');
+        isEditing = !isEditing;
+
+        if (isEditing) {
+            grid.classList.add('editing');
+            btn.innerText = "Done";
+            // Initialize Sortable
+            sortable = Sortable.create(grid, {
+                animation: 250,
+                ghostClass: 'sortable-ghost',
+                onEnd: function() {
+                    const order = sortable.toArray();
+                    localStorage.setItem('hub-tile-order', JSON.stringify(order));
+                }
+            });
+        } else {
+            grid.classList.remove('editing');
+            btn.innerText = "⚙️ Edit Hub";
+            if(sortable) sortable.destroy();
+        }
+    }
 
     function updateClock() {
         const now = new Date();
         document.getElementById('clock').textContent = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-        // Setting Dutch locale for your Netherlands residency
         document.getElementById('live-date').textContent = now.toLocaleDateString('en-NL', { weekday: 'long', day: 'numeric', month: 'long' });
     }
 
-    async function fetchScores() {
-        const container = document.getElementById('match-list');
-        try {
-            // Using a CORS proxy to prevent the "Score feed error" seen in image.png
-            const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://api.sportmonks.com/v3/football/livescores/inplay?api_token=' + SPORTMONKS_TOKEN)}`);
-            const wrapper = await res.json();
-            const data = JSON.parse(wrapper.contents);
-            
-            if (!data.data || data.data.length === 0) {
-                container.innerHTML = '<div style="padding:20px; color:#666;">No matches currently live.</div>';
-                return;
-            }
-            // Add match rendering logic here if needed
-        } catch (e) {
-            container.innerHTML = '<div style="padding:20px; color:#444;">Score feed restricted.</div>';
-        }
-    }
-
     window.onload = () => {
-        // Retrieve personal profile data
         document.getElementById('user-img').src = localStorage.getItem('active_pic') || '';
-        
         updateClock();
         setInterval(updateClock, 1000);
-        fetchScores();
-        // Refresh scores every 2 minutes
-        setInterval(fetchScores, 120000);
+        
+        // Load saved order if it exists
+        const savedOrder = localStorage.getItem('hub-tile-order');
+        if (savedOrder) {
+            // Logic to reorder elements based on ID can go here
+        }
     };
 </script>
 </body>
