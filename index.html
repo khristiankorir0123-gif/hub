@@ -16,167 +16,150 @@
             overflow: hidden;
         }
 
-        /* 6-Section Grid Layout */
+        /* 6-Section Grid */
         .bento-grid {
             display: grid;
-            grid-template-columns: 1fr 1.5fr 1fr; /* Side, Center, Side */
-            grid-template-rows: 160px 1fr; /* Top row for Profile/Apps, Bottom for Data */
+            grid-template-columns: 1fr 1.5fr 1fr; 
+            grid-template-rows: 180px 1fr; 
             gap: 20px;
-            padding: 25px;
+            padding: 30px;
             height: 100vh;
             box-sizing: border-box;
         }
 
         .tile { 
             background: #111; 
-            border-radius: 24px; 
+            border-radius: 28px; 
             border: 1px solid #222; 
-            position: relative;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
+            position: relative;
+            overflow: hidden;
         }
 
-        /* Top Row Specials */
-        .profile-section { display: flex; align-items: center; padding: 0 30px; justify-content: space-between; }
-        .apps-section { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: none; border: none; }
+        /* Top Left: Profile & Time */
+        .profile-section { padding: 25px; display: flex; align-items: center; justify-content: space-between; }
+        #clock { font-size: 2.8rem; font-weight: 700; line-height: 1; }
+        #live-date { color: #888; font-size: 1rem; margin-top: 5px; }
         
-        /* App Buttons */
+        /* Top Center: Apps */
+        .apps-section { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; border: none; background: transparent; }
         .app-btn {
-            background: #111;
-            border: 1px solid #222;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            color: white;
-            transition: 0.3s;
+            background: #111; border: 1px solid #222; border-radius: 24px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-decoration: none; color: white; transition: 0.3s;
         }
-        .app-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .app-btn:hover { border-color: var(--accent); background: #161616; transform: translateY(-3px); }
 
         /* Widgets */
         .widget-header { 
-            padding: 20px 20px 10px; 
-            color: var(--accent); 
-            font-weight: bold; 
-            font-size: 0.8rem; 
-            text-transform: uppercase; 
-            letter-spacing: 1px;
-            display: flex;
-            justify-content: space-between;
+            padding: 20px; color: var(--accent); font-weight: bold; font-size: 0.8rem; 
+            text-transform: uppercase; letter-spacing: 1px;
         }
 
-        .scroll-area { flex: 1; overflow-y: auto; padding: 0 20px 20px; }
-        
-        /* Time Display */
-        #clock { font-size: 2.5rem; font-weight: 700; margin: 10px 0; }
-        #live-date { color: #888; font-size: 1rem; }
+        .content-fill { flex: 1; width: 100%; overflow: hidden; }
 
-        .edit-btn {
-            position: absolute; top: 15px; right: 15px;
-            background: rgba(255,255,255,0.1); border: none; color: #666;
-            padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 0.7rem;
+        /* Calendar Filter for Dark Mode */
+        .cal-frame { filter: invert(0.9) hue-rotate(180deg) brightness(0.8); width: 100%; height: 100%; border: none; }
+
+        .switch-btn { 
+            background: rgba(255,255,255,0.1); border: none; color: white; 
+            padding: 8px 16px; border-radius: 12px; cursor: pointer; font-size: 0.8rem;
         }
-        .edit-btn:hover { color: white; background: var(--accent); }
-
-        iframe { width: 100%; height: 100%; border: none; border-radius: 15px; }
-
-        /* Proxy fix for Feed Errors */
-        .error-msg { color: #444; font-size: 0.9rem; text-align: center; margin-top: 50px; }
     </style>
 </head>
 <body>
 
 <div class="bento-grid">
-    <!-- 1. Profile & Time -->
+    <!-- 1. Profile & Time (Top Left) -->
     <div class="tile profile-section">
         <div style="display: flex; align-items: center;">
-            <img id="user-img" src="" style="width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--accent); margin-right: 20px;">
+            <img id="user-img" src="" style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--accent); margin-right: 20px; object-fit: cover;">
             <div>
                 <div id="clock">00:00</div>
-                <div id="live-date">Loading date...</div>
+                <div id="live-date">...</div>
             </div>
         </div>
-        <button class="switch-btn" onclick="location.href='https://khristiankorir0123-gif.github.io/login-screen/'" style="background:var(--glass); border:1px solid #333; color:white; padding:8px 15px; border-radius:12px; cursor:pointer;">Switch</button>
+        <button class="switch-btn" onclick="location.href='https://khristiankorir0123-gif.github.io/login-screen/'">Switch</button>
     </div>
 
-    <!-- 2. Apps Section (Top Center) -->
+    <!-- 2. Apps (Top Center) -->
     <div class="tile apps-section">
-        <a href="https://onedrive.live.com" class="app-btn">☁️ OneDrive</a>
-        <a href="https://vidbox.de" class="app-btn">🎬 Vidbox</a>
+        <a href="https://onedrive.live.com" class="app-btn">
+            <span style="font-size: 1.5rem; margin-bottom: 5px;">☁️</span>OneDrive
+        </a>
+        <a href="https://vidbox.de" class="app-btn">
+            <span style="font-size: 1.5rem; margin-bottom: 5px;">🎬</span>Vidbox
+        </a>
     </div>
 
-    <!-- 3. Edit/Settings (Top Right) -->
-    <div class="tile" style="justify-content: center; align-items: center; background: var(--glass);">
-        <button class="app-btn" style="width: 80%; height: 50px;" onclick="alert('Edit Mode Active')">⚙️ Edit Tiles</button>
+    <!-- 3. Edit Control (Top Right) -->
+    <div class="tile" style="justify-content: center; align-items: center; background: rgba(0,122,255,0.03);">
+        <button class="app-btn" style="width: 70%; height: 60px;" onclick="alert('Edit Mode: Drag tiles to rearrange')">⚙️ Edit Hub</button>
     </div>
 
-    <!-- 4. Score Feed (Left Bottom) -->
+    <!-- 4. Score Feed (Bottom Left) -->
     <div class="tile">
-        <div class="widget-header">Live Scores <span style="color:#444">In-Play</span></div>
-        <div class="scroll-area" id="match-list">
-            <div class="error-msg">Checking for live matches...</div>
+        <div class="widget-header">Live Scores</div>
+        <div class="content-fill" id="match-list">
+            <div style="padding: 20px; color: #444;">Connecting to Sportmonks...</div>
         </div>
     </div>
 
-    <!-- 5. Large Calendar (Center Bottom) -->
-    <div class="tile" style="padding: 10px;">
-        <iframe src="https://calendar.google.com/calendar/embed?src=en.dutch%23holiday%40group.v.calendar.google.com&ctz=Europe%2FAmsterdam" style="filter: invert(0.9) hue-rotate(180deg) brightness(0.8);"></iframe>
+    <!-- 5. Large Calendar (Bottom Center) -->
+    <div class="tile">
+        <iframe src="https://calendar.google.com/calendar/embed?src=en.dutch%23holiday%40group.v.calendar.google.com&ctz=Europe%2FAmsterdam" class="cal-frame"></iframe>
     </div>
 
-    <!-- 6. Large News Feed (Right Bottom) -->
+    <!-- 6. News Carousel (Bottom Right) -->
     <div class="tile">
-        <div class="widget-header">Latest News</div>
-        <div class="scroll-area" id="news-list">
-            <div class="error-msg">Fetching RSS feed...</div>
+        <div class="widget-header">Global Headlines</div>
+        <div class="content-fill">
+            <!-- RSS.app Widget Integrated -->
+            <rssapp-carousel id="tgVNLlUheA584JKg"></rssapp-carousel>
+            <script src="https://widget.rss.app/v1/carousel.js" type="text/javascript" async></script>
         </div>
     </div>
 </div>
 
 <script>
-    // --- TECH TIP: FIXING THE FEED ERRORS ---
-    // Since browsers block direct requests, we use a 'CORS Proxy' for development.
-    const PROXY = "https://cors-anywhere.herokuapp.com/"; 
-    const SPORTMONKS_TOKEN = 'YOUR_API_TOKEN_HERE';
-    const NEWS_URL = "https://rss.app/feeds/tgVNLlUheA584JKg.csv";
+    // Configuration
+    const SPORTMONKS_TOKEN = 'YOUR_ACTUAL_TOKEN_HERE';
 
-    function updateTime() {
+    function updateClock() {
         const now = new Date();
         document.getElementById('clock').textContent = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        // Setting Dutch locale for your Netherlands residency
         document.getElementById('live-date').textContent = now.toLocaleDateString('en-NL', { weekday: 'long', day: 'numeric', month: 'long' });
     }
 
     async function fetchScores() {
         const container = document.getElementById('match-list');
-        // If this fails, it's 100% a CORS issue or an expired API Token
         try {
-            const res = await fetch(`${PROXY}https://api.sportmonks.com/v3/football/livescores/inplay?api_token=${SPORTMONKS_TOKEN}`);
-            const data = await res.json();
-            // Map data here...
+            // Using a CORS proxy to prevent the "Score feed error" seen in image.png
+            const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://api.sportmonks.com/v3/football/livescores/inplay?api_token=' + SPORTMONKS_TOKEN)}`);
+            const wrapper = await res.json();
+            const data = JSON.parse(wrapper.contents);
+            
+            if (!data.data || data.data.length === 0) {
+                container.innerHTML = '<div style="padding:20px; color:#666;">No matches currently live.</div>';
+                return;
+            }
+            // Add match rendering logic here if needed
         } catch (e) {
-            container.innerHTML = `<div class="error-msg">Scores unavailable.<br><small>Tip: Enable CORS in browser settings</small></div>`;
-        }
-    }
-
-    async function fetchNews() {
-        const container = document.getElementById('news-list');
-        try {
-            const res = await fetch(`${PROXY}${NEWS_URL}`);
-            const text = await res.text();
-            const lines = text.split('\n').slice(1, 15); // Show more lines to fill space
-            container.innerHTML = lines.map(l => `<div style="padding:15px 0; border-bottom:1px solid #222; color:#bbb; font-size:0.9rem;">${l.split(',')[0]}</div>`).join('');
-        } catch (e) {
-            container.innerHTML = `<div class="error-msg">News feed blocked by CORS.</div>`;
+            container.innerHTML = '<div style="padding:20px; color:#444;">Score feed restricted.</div>';
         }
     }
 
     window.onload = () => {
+        // Retrieve personal profile data
         document.getElementById('user-img').src = localStorage.getItem('active_pic') || '';
-        updateTime();
-        setInterval(updateTime, 1000);
+        
+        updateClock();
+        setInterval(updateClock, 1000);
         fetchScores();
-        fetchNews();
+        // Refresh scores every 2 minutes
+        setInterval(fetchScores, 120000);
     };
 </script>
 </body>
