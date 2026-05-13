@@ -40,7 +40,6 @@
             position: relative;
         }
 
-        /* Hover & Focus Effects for TV Remote */
         .tile:hover, .tile:focus { 
             border-color: var(--accent); 
             transform: scale(1.03); 
@@ -49,12 +48,12 @@
             background: #161616;
         }
 
-        /* Layout Positioning from your Artboard */
+        /* Layout Positions */
         .greeting { grid-column: span 2; flex-direction: row; justify-content: space-between; padding: 0 40px; background: var(--glass); backdrop-filter: blur(10px); }
         .calendar { grid-column: span 1; grid-row: span 2; }
-        .footer-wide { grid-column: span 2; grid-row: span 1; background: #000; }
+        .footer-wide { grid-column: span 2; grid-row: span 1; align-items: flex-start; justify-content: flex-start; padding: 25px; }
         
-        /* Profile Styling */
+        /* Profile Info */
         .user-info { display: flex; align-items: center; }
         #user-img { width: 90px; height: 90px; border-radius: 50%; margin-right: 25px; object-fit: cover; border: 2px solid var(--accent); background: #222; }
         
@@ -63,19 +62,23 @@
             border: none; color: #aaa; 
             padding: 10px 20px; border-radius: 12px; 
             cursor: pointer; font-size: 0.9rem; font-weight: 500;
-            transition: 0.2s;
         }
-        .switch-btn:hover { background: #ff3b30; color: white; }
+
+        .widget-title { color: var(--accent); font-weight: bold; margin-bottom: 15px; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase; }
+        #match-list, #news-list { width: 100%; overflow-y: auto; }
+        .app-label { margin-top: 10px; font-weight: 500; font-size: 1.1rem; }
+        
+        /* Custom Scrollbar for News */
+        #news-list::-webkit-scrollbar { width: 4px; }
+        #news-list::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
 
         iframe { width: 100%; height: 100%; border: none; }
-
-        .app-label { margin-top: 10px; font-weight: 500; font-size: 1.1rem; }
     </style>
 </head>
 <body>
 
 <div class="bento-grid">
-    <!-- Greeting Section (Artboard Top Center) -->
+    <!-- Greeting -->
     <div class="tile greeting">
         <div class="user-info">
             <img id="user-img" src="" alt="Profile">
@@ -87,59 +90,105 @@
         <button class="switch-btn" onclick="switchUser()">Switch Profile</button>
     </div>
 
-    <!-- Productivity Apps (Artboard Top Left) -->
+    <!-- Apps -->
     <a href="https://onedrive.live.com" class="tile" tabindex="1">
-        <span style="font-size: 2rem;">☁️</span>
-        <span class="app-label">OneDrive</span>
+        <span style="font-size: 2rem;">☁️</span><span class="app-label">OneDrive</span>
     </a>
-    <a href="https://vidsrc.me" class="tile" tabindex="2">
-        <span style="font-size: 2rem;">🎬</span>
-        <span class="app-label">Vidbox</span>
+    <a href="https://vidbox.de" class="tile" tabindex="2">
+        <span style="font-size: 2rem;">🎬</span><span class="app-label">Vidbox</span>
     </a>
 
-    <!-- Football Tile (Artboard Bottom) -->
+    <!-- Live Football Tile -->
     <div class="tile footer-wide">
-        <iframe src="https://www.livescore.com/en/football/"></iframe>
+        <div class="widget-title">Live Scores</div>
+        <div id="match-list">Fetching live matches...</div>
     </div>
     
-    <!-- News Tile (Artboard Bottom) -->
+    <!-- News Tile -->
     <div class="tile footer-wide">
-        <!-- Replace YOUR_KEY with your actual RSS.app key -->
-        <iframe src="https://rss.app/embed/v1/wall/YOUR_KEY"></iframe>
+        <div class="widget-title">Latest Headlines</div>
+        <div id="news-list">Fetching news feed...</div>
     </div>
 
-    <!-- Calendar (Artboard Right) -->
+    <!-- Calendar -->
     <div class="tile calendar">
         <iframe src="https://calendar.google.com/calendar/embed?src=en.dutch%23holiday%40group.v.calendar.google.com&ctz=Europe%2FAmsterdam" style="filter: invert(0.92) hue-rotate(180deg);"></iframe>
     </div>
 </div>
 
 <script>
+    // --- CONFIGURATION ---
+    const SPORTMONKS_TOKEN = 'PASTE_YOUR_API_TOKEN_HERE';
+    const NEWS_CSV_URL = "https://rss.app/feeds/tgVNLlUheA584JKg.csv";
+
+    // --- FOOTBALL LOGIC ---
+    async function fetchScores() {
+        const url = `https://api.sportmonks.com/v3/football/livescores/inplay?api_token=${SPORTMONKS_TOKEN}&include=participants;scores`;
+        try {
+            const res = await fetch(url);
+            const json = await res.json();
+            const matches = json.data || [];
+            const container = document.getElementById('match-list');
+
+            if (matches.length === 0) {
+                container.innerHTML = "<div style='color:#666;'>No matches currently inplay.</div>";
+                return;
+            }
+
+            container.innerHTML = matches.slice(0, 4).map(match => {
+                const home = match.participants.find(p => p.meta.location === 'home');
+                const away = match.participants.find(p => p.meta.location === 'away');
+                const hScore = match.scores.find(s => s.description === 'CURRENT' && s.participant_id === home.id)?.score.goals || 0;
+                const aScore = match.scores.find(s => s.description === 'CURRENT' && s.participant_id === away.id)?.score.goals || 0;
+
+                return `
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:rgba(255,255,255,0.02); border-radius:15px; margin-bottom:10px; border:1px solid #222;">
+                        <span style="flex:1; text-align:right; font-size:0.9rem;">${home.name}</span>
+                        <span style="background:var(--accent); padding:4px 12px; border-radius:8px; margin:0 15px; font-weight:bold; min-width:35px; text-align:center;">${hScore} - ${aScore}</span>
+                        <span style="flex:1; text-align:left; font-size:0.9rem;">${away.name}</span>
+                    </div>`;
+            }).join('');
+        } catch (e) { document.getElementById('match-list').innerHTML = "Score feed error."; }
+    }
+
+    // --- NEWS LOGIC ---
+    async function fetchNews() {
+        try {
+            const res = await fetch(NEWS_CSV_URL);
+            const data = await res.text();
+            const rows = data.split('\n').slice(1);
+            const container = document.getElementById('news-list');
+
+            container.innerHTML = rows.map(row => {
+                const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+                if (!cols || cols.length < 2) return '';
+                const title = cols[0].replace(/"/g, '');
+                const link = cols[1].replace(/"/g, '');
+                return `<a href="${link}" target="_blank" style="display:block; color:#aaa; text-decoration:none; padding:12px 0; border-bottom:1px solid #222; font-size:0.95rem; transition:0.2s;">• ${title}</a>`;
+            }).join('');
+        } catch (e) { document.getElementById('news-list').innerHTML = "News feed error."; }
+    }
+
+    // --- CORE HUB LOGIC ---
     function switchUser() {
-        // Points back to your login repository
         window.location.href = "https://khristiankorir0123-gif.github.io/login-screen/";
     }
 
     window.onload = function() {
-        const activeName = localStorage.getItem('active_user');
-        const activePic = localStorage.getItem('active_pic');
+        const name = localStorage.getItem('active_user');
+        const pic = localStorage.getItem('active_pic');
+        if (!name) return switchUser();
 
-        if (activeName) {
-            document.getElementById('user-name').innerText = `Welcome, ${activeName}`;
-        } else {
-            // Kick back to login if no active session found
-            switchUser();
-        }
+        document.getElementById('user-name').innerText = `Welcome, ${name}`;
+        if (pic) document.getElementById('user-img').src = pic;
 
-        if (activePic) {
-            document.getElementById('user-img').src = activePic;
-        }
-
-        // Dutch localized date for your Netherlands residency
         const options = { weekday: 'long', month: 'long', day: 'numeric' };
         document.getElementById('live-date').innerText = new Date().toLocaleDateString('en-NL', options);
+
+        fetchScores();
+        fetchNews();
+        setInterval(fetchScores, 60000); // Update football every min
     }
 </script>
-
 </body>
 </html>
