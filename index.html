@@ -109,12 +109,12 @@
 </div>
 
 <script>
-    const SPORTMONKS_TOKEN = 'PASTE_YOUR_API_TOKEN_HERE';
+    const SPORTMONKS_TOKEN = 'https://api.sportmonks.com/v3/football/livescores/latest?api_token=widget';
     const NEWS_CSV_URL = "https://rss.app/feeds/tgVNLlUheA584JKg.csv";
     const LOGIN_PATH = "https://khristiankorir0123-gif.github.io/login-screen/";
 
     async function fetchScores() {
-        const url = `https://api.sportmonks.com/v3/football/livescores/inplay?api_token=${SPORTMONKS_TOKEN}&include=participants;scores`;
+        const url = `https://api.sportmonks.com/v3/football/livescores/latest?api_token=widget&include=participants;scores`;
         try {
             const res = await fetch(url);
             const json = await res.json();
