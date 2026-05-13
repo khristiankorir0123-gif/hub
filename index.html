@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-OS | Hub</title>
+    <style>
+        :root { --accent: #007aff; --glass: rgba(255, 255, 255, 0.05); }
+        
+        body { 
+            background: #000; 
+            color: white; 
+            font-family: -apple-system, sans-serif; 
+            margin: 0; 
+            overflow-x: hidden;
+        }
+
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: 180px 220px 450px;
+            gap: 20px;
+            padding: 40px;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .tile { 
+            background: #111; 
+            border-radius: 28px; 
+            border: 1px solid #222; 
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); 
+            color: white; 
+            text-decoration: none; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Hover & Focus Effects for TV Remote */
+        .tile:hover, .tile:focus { 
+            border-color: var(--accent); 
+            transform: scale(1.03); 
+            outline: none; 
+            box-shadow: 0 0 30px rgba(0,122,255,0.2);
+            background: #161616;
+        }
+
+        /* Layout Positioning from your Artboard */
+        .greeting { grid-column: span 2; flex-direction: row; justify-content: space-between; padding: 0 40px; background: var(--glass); backdrop-filter: blur(10px); }
+        .calendar { grid-column: span 1; grid-row: span 2; }
+        .footer-wide { grid-column: span 2; grid-row: span 1; background: #000; }
+        
+        /* Profile Styling */
+        .user-info { display: flex; align-items: center; }
+        #user-img { width: 90px; height: 90px; border-radius: 50%; margin-right: 25px; object-fit: cover; border: 2px solid var(--accent); background: #222; }
+        
+        .switch-btn { 
+            background: rgba(255,255,255,0.1); 
+            border: none; color: #aaa; 
+            padding: 10px 20px; border-radius: 12px; 
+            cursor: pointer; font-size: 0.9rem; font-weight: 500;
+            transition: 0.2s;
+        }
+        .switch-btn:hover { background: #ff3b30; color: white; }
+
+        iframe { width: 100%; height: 100%; border: none; }
+
+        .app-label { margin-top: 10px; font-weight: 500; font-size: 1.1rem; }
+    </style>
+</head>
+<body>
+
+<div class="bento-grid">
+    <!-- Greeting Section (Artboard Top Center) -->
+    <div class="tile greeting">
+        <div class="user-info">
+            <img id="user-img" src="" alt="Profile">
+            <div>
+                <h1 id="user-name" style="margin:0; font-size: 1.8rem; font-weight: 600;">Welcome</h1>
+                <p id="live-date" style="margin: 5px 0 0 0; color: #888; font-size: 1.1rem;"></p>
+            </div>
+        </div>
+        <button class="switch-btn" onclick="switchUser()">Switch Profile</button>
+    </div>
+
+    <!-- Productivity Apps (Artboard Top Left) -->
+    <a href="https://onedrive.live.com" class="tile" tabindex="1">
+        <span style="font-size: 2rem;">☁️</span>
+        <span class="app-label">OneDrive</span>
+    </a>
+    <a href="https://vidsrc.me" class="tile" tabindex="2">
+        <span style="font-size: 2rem;">🎬</span>
+        <span class="app-label">Vidbox</span>
+    </a>
+
+    <!-- Football Tile (Artboard Bottom) -->
+    <div class="tile footer-wide">
+        <iframe src="https://www.livescore.com/en/football/"></iframe>
+    </div>
+    
+    <!-- News Tile (Artboard Bottom) -->
+    <div class="tile footer-wide">
+        <!-- Replace YOUR_KEY with your actual RSS.app key -->
+        <iframe src="https://rss.app/embed/v1/wall/YOUR_KEY"></iframe>
+    </div>
+
+    <!-- Calendar (Artboard Right) -->
+    <div class="tile calendar">
+        <iframe src="https://calendar.google.com/calendar/embed?src=en.dutch%23holiday%40group.v.calendar.google.com&ctz=Europe%2FAmsterdam" style="filter: invert(0.92) hue-rotate(180deg);"></iframe>
+    </div>
+</div>
+
+<script>
+    function switchUser() {
+        // Points back to your login repository
+        window.location.href = "https://khristiankorir0123-gif.github.io/login-screen/";
+    }
+
+    window.onload = function() {
+        const activeName = localStorage.getItem('active_user');
+        const activePic = localStorage.getItem('active_pic');
+
+        if (activeName) {
+            document.getElementById('user-name').innerText = `Welcome, ${activeName}`;
+        } else {
+            // Kick back to login if no active session found
+            switchUser();
+        }
+
+        if (activePic) {
+            document.getElementById('user-img').src = activePic;
+        }
+
+        // Dutch localized date for your Netherlands residency
+        const options = { weekday: 'long', month: 'long', day: 'numeric' };
+        document.getElementById('live-date').innerText = new Date().toLocaleDateString('en-NL', options);
+    }
+</script>
+
+</body>
+</html>
