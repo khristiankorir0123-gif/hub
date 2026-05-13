@@ -51,3 +51,15 @@
     document.getElementById('user-img').src = localStorage.getItem('hub_pic');
     document.getElementById('live-date').innerText = new Date().toLocaleDateString();
 </script>
+
+window.onload = function() {
+    const activeName = localStorage.getItem('active_user');
+    const activePic = localStorage.getItem('active_pic');
+
+    if (activeName) {
+        document.getElementById('user-name').innerText = `Welcome, ${activeName}`;
+    }
+    if (activePic) {
+        document.getElementById('user-img').src = activePic;
+    }
+}
