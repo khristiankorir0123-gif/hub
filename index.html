@@ -48,12 +48,10 @@
             background: #161616;
         }
 
-        /* Layout Positions */
         .greeting { grid-column: span 2; flex-direction: row; justify-content: space-between; padding: 0 40px; background: var(--glass); backdrop-filter: blur(10px); }
         .calendar { grid-column: span 1; grid-row: span 2; }
         .footer-wide { grid-column: span 2; grid-row: span 1; align-items: flex-start; justify-content: flex-start; padding: 25px; }
         
-        /* Profile Info */
         .user-info { display: flex; align-items: center; }
         #user-img { width: 90px; height: 90px; border-radius: 50%; margin-right: 25px; object-fit: cover; border: 2px solid var(--accent); background: #222; }
         
@@ -68,7 +66,6 @@
         #match-list, #news-list { width: 100%; overflow-y: auto; }
         .app-label { margin-top: 10px; font-weight: 500; font-size: 1.1rem; }
         
-        /* Custom Scrollbar for News */
         #news-list::-webkit-scrollbar { width: 4px; }
         #news-list::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
 
@@ -78,7 +75,6 @@
 <body>
 
 <div class="bento-grid">
-    <!-- Greeting -->
     <div class="tile greeting">
         <div class="user-info">
             <img id="user-img" src="" alt="Profile">
@@ -90,7 +86,6 @@
         <button class="switch-btn" onclick="switchUser()">Switch Profile</button>
     </div>
 
-    <!-- Apps -->
     <a href="https://onedrive.live.com" class="tile" tabindex="1">
         <span style="font-size: 2rem;">☁️</span><span class="app-label">OneDrive</span>
     </a>
@@ -98,30 +93,26 @@
         <span style="font-size: 2rem;">🎬</span><span class="app-label">Vidbox</span>
     </a>
 
-    <!-- Live Football Tile -->
     <div class="tile footer-wide">
         <div class="widget-title">Live Scores</div>
         <div id="match-list">Fetching live matches...</div>
     </div>
     
-    <!-- News Tile -->
     <div class="tile footer-wide">
         <div class="widget-title">Latest Headlines</div>
         <div id="news-list">Fetching news feed...</div>
     </div>
 
-    <!-- Calendar -->
     <div class="tile calendar">
         <iframe src="https://calendar.google.com/calendar/embed?src=en.dutch%23holiday%40group.v.calendar.google.com&ctz=Europe%2FAmsterdam" style="filter: invert(0.92) hue-rotate(180deg);"></iframe>
     </div>
 </div>
 
 <script>
-    // --- CONFIGURATION ---
     const SPORTMONKS_TOKEN = 'PASTE_YOUR_API_TOKEN_HERE';
     const NEWS_CSV_URL = "https://rss.app/feeds/tgVNLlUheA584JKg.csv";
+    const LOGIN_PATH = "https://khristiankorir0123-gif.github.io/login-screen/";
 
-    // --- FOOTBALL LOGIC ---
     async function fetchScores() {
         const url = `https://api.sportmonks.com/v3/football/livescores/inplay?api_token=${SPORTMONKS_TOKEN}&include=participants;scores`;
         try {
@@ -129,18 +120,15 @@
             const json = await res.json();
             const matches = json.data || [];
             const container = document.getElementById('match-list');
-
             if (matches.length === 0) {
                 container.innerHTML = "<div style='color:#666;'>No matches currently inplay.</div>";
                 return;
             }
-
             container.innerHTML = matches.slice(0, 4).map(match => {
                 const home = match.participants.find(p => p.meta.location === 'home');
                 const away = match.participants.find(p => p.meta.location === 'away');
                 const hScore = match.scores.find(s => s.description === 'CURRENT' && s.participant_id === home.id)?.score.goals || 0;
                 const aScore = match.scores.find(s => s.description === 'CURRENT' && s.participant_id === away.id)?.score.goals || 0;
-
                 return `
                     <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:rgba(255,255,255,0.02); border-radius:15px; margin-bottom:10px; border:1px solid #222;">
                         <span style="flex:1; text-align:right; font-size:0.9rem;">${home.name}</span>
@@ -151,14 +139,12 @@
         } catch (e) { document.getElementById('match-list').innerHTML = "Score feed error."; }
     }
 
-    // --- NEWS LOGIC ---
     async function fetchNews() {
         try {
             const res = await fetch(NEWS_CSV_URL);
             const data = await res.text();
             const rows = data.split('\n').slice(1);
             const container = document.getElementById('news-list');
-
             container.innerHTML = rows.map(row => {
                 const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
                 if (!cols || cols.length < 2) return '';
@@ -169,9 +155,8 @@
         } catch (e) { document.getElementById('news-list').innerHTML = "News feed error."; }
     }
 
-    // --- CORE HUB LOGIC ---
     function switchUser() {
-        window.location.href = "https://khristiankorir0123-gif.github.io/login-screen/";
+        window.location.href = LOGIN_PATH;
     }
 
     window.onload = function() {
@@ -187,7 +172,7 @@
 
         fetchScores();
         fetchNews();
-        setInterval(fetchScores, 60000); // Update football every min
+        setInterval(fetchScores, 60000);
     }
 </script>
 </body>
