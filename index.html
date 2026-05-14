@@ -3,182 +3,483 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>K-OS | Family Hub</title>
+    <title>K-OS | Universal Family Hub</title>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    
     <style>
-        :root { 
-            --accent: #007aff; 
-            --card-bg: #111;
-            --border: #222;
+        /* --- DESIGN SYSTEM --- */
+        :root {
+            --accent: #007aff;
+            --accent-gradient: linear-gradient(135deg, #007aff, #00c6ff);
+            --bg: #000000;
+            --card-bg: rgba(28, 28, 30, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #ffffff;
+            --text-dim: #8e8e93;
             --radius: 28px;
-        }
-        
-        body, html { 
-            background: #000; color: white; 
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
-            margin: 0; height: 100vh; overflow: hidden;
-            display: flex; flex-direction: column;
+            --blur: saturate(180%) blur(20px);
         }
 
+        * {
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+            overflow: hidden; /* Desktop is fixed-view */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- BACKGROUND DECOR --- */
+        .bg-glow {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #000 100%);
+            z-index: -1;
+        }
+
+        /* --- THE GRID --- */
         .bento-grid {
             display: grid;
             grid-template-columns: repeat(12, 1fr);
-            grid-template-rows: 160px 1.2fr 0.8fr; 
-            gap: 20px;
-            padding: 25px;
+            grid-template-rows: 180px 1.2fr 0.8fr;
+            gap: 24px;
+            padding: 30px;
             width: 100%;
             height: 100vh;
-            box-sizing: border-box;
+            max-width: 1800px;
+            margin: 0 auto;
         }
 
-        .tile { 
-            background: var(--card-bg); 
-            border-radius: var(--radius); 
-            border: 1px solid var(--border); 
-            display: flex; flex-direction: column;
-            position: relative; overflow: hidden;
+        .tile {
+            background: var(--card-bg);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
         }
 
-        /* Universal Edit Button */
-        .edit-fab {
-            position: fixed; bottom: 30px; right: 30px;
-            width: 50px; height: 50px; border-radius: 50%;
-            background: var(--accent); border: none; color: white;
-            box-shadow: 0 4px 15px rgba(0,122,255,0.4);
-            cursor: pointer; z-index: 100; font-size: 1.2rem;
-            display: flex; align-items: center; justify-content: center;
-        }
-
-        .editing .tile { animation: wiggle 0.3s infinite; cursor: grab; }
+        /* --- EDIT MODE & WIGGLE --- */
         @keyframes wiggle {
             0% { transform: rotate(-0.5deg); }
-            50% { transform: rotate(0.5deg); }
+            50% { transform: rotate(0.6deg); }
             100% { transform: rotate(-0.5deg); }
         }
 
-        /* Layout Assignments */
-        .profile { grid-column: span 8; flex-direction: row; align-items: center; padding: 0 30px; }
-        .app-small { grid-column: span 2; }
-        .main-widget { grid-column: span 4; }
-        .extra-widget { grid-column: span 3; }
-
-        .widget-header { padding: 20px 20px 10px; color: var(--accent); font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
-        #clock { font-size: 3.5rem; font-weight: 700; margin: 0; letter-spacing: -2px; }
-        
-        .app-link {
-            background: #181818; border-radius: 20px;
-            color: white; text-decoration: none; display: flex;
-            align-items: center; justify-content: center; height: 100%;
+        .editing .tile {
+            animation: wiggle 0.25s infinite ease-in-out;
+            cursor: grab;
+            border: 1px solid rgba(0, 122, 255, 0.5);
+            box-shadow: 0 0 15px rgba(0, 122, 255, 0.2);
         }
 
-        iframe { filter: invert(0.9) hue-rotate(180deg) brightness(0.8); width: 100%; height: 100%; border: none; }
+        .editing iframe, .editing rssapp-carousel, .editing textarea {
+            pointer-events: none; /* Prevents interaction so we can drag the tile */
+        }
 
-        @media (max-width: 900px) {
-            body, html { height: auto; overflow-y: auto; }
-            .bento-grid { display: flex; flex-direction: column; height: auto; }
-            .tile { min-height: 200px; }
+        .sortable-ghost {
+            opacity: 0.2;
+            transform: scale(0.95);
+        }
+
+        /* --- ROW 1 ELEMENTS --- */
+        .profile-container {
+            grid-column: span 8;
+            display: flex;
+            align-items: center;
+            padding: 0 40px;
+            justify-content: space-between;
+        }
+
+        .profile-meta {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        #user-img {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 3px solid var(--accent);
+            object-fit: cover;
+            box-shadow: 0 0 20px rgba(0, 122, 255, 0.3);
+        }
+
+        #clock {
+            font-size: 4rem;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: -3px;
+            line-height: 1;
+        }
+
+        #live-date {
+            color: var(--text-dim);
+            margin: 5px 0 0 0;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .app-tile {
+            grid-column: span 2;
+        }
+
+        .app-link {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: 0.3s;
+        }
+
+        .app-link:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* --- ROW 2 ELEMENTS (MAIN) --- */
+        .widget-main {
+            grid-column: span 4;
+        }
+
+        .header-box {
+            padding: 24px 24px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title {
+            color: var(--accent);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+        }
+
+        #sync-indicator {
+            font-size: 0.65rem;
+            color: #34c759;
+            font-weight: 400;
+            text-transform: none;
+            opacity: 0;
+            transition: 0.3s;
+        }
+
+        /* --- WIDGET CONTENT --- */
+        .content-area {
+            flex: 1;
+            width: 100%;
+            position: relative;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            filter: invert(0.92) hue-rotate(180deg) brightness(0.9);
+        }
+
+        #family-notes {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border: none;
+            color: #e5e5e7;
+            padding: 0 24px 24px;
+            font-family: inherit;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+        }
+
+        /* --- ROW 3 ELEMENTS (UTILS) --- */
+        .widget-small {
+            grid-column: span 3;
+        }
+
+        .status-pill {
+            padding: 20px 24px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-gradient);
+            border-radius: 10px;
+        }
+
+        /* --- FLOATING UI --- */
+        .fab {
+            position: fixed;
+            bottom: 35px;
+            right: 35px;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            border: none;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(0, 122, 255, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            z-index: 9999;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .fab:hover { transform: scale(1.1); }
+        .editing-active .fab { background: #34c759; transform: rotate(90deg); }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 1024px) {
+            body { overflow-y: auto; }
+            .bento-grid {
+                display: flex;
+                flex-direction: column;
+                height: auto;
+                padding: 15px;
+            }
+            .tile { min-height: 250px; }
+            .profile-container { flex-direction: column; gap: 20px; padding: 30px; text-align: center; }
+            .profile-meta { flex-direction: column; gap: 10px; }
+            #clock { font-size: 3rem; }
         }
     </style>
 </head>
 <body>
 
-<button class="edit-fab" id="editBtn" onclick="toggleEditMode()">⚙️</button>
+    <div class="bg-glow"></div>
 
-<div class="bento-grid" id="main-grid">
-    <!-- ROW 1: Identity & Time -->
-    <div class="tile profile">
-        <img id="user-img" src="" style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--accent); margin-right: 25px; object-fit: cover;">
-        <div>
-            <h1 id="clock">00:00</h1>
-            <p id="live-date" style="color: #666; margin-top: 5px;"></p>
+    <button class="fab" id="editToggle" onclick="toggleEditMode()">⚙️</button>
+
+    <div class="bento-grid" id="main-grid">
+        
+        <div class="tile profile-container" data-id="profile">
+            <div class="profile-meta">
+                <img id="user-img" src="" alt="Profile">
+                <div>
+                    <h1 id="clock">00:00</h1>
+                    <p id="live-date">Loading...</p>
+                </div>
+            </div>
+            <button onclick="location.href='https://khristiankorir0123-gif.github.io/login-screen/'" 
+                    style="background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: white; padding: 12px 24px; border-radius: 16px; cursor: pointer; font-weight: 600;">
+                Switch Profile
+            </button>
         </div>
-        <button onclick="location.href='https://khristiankorir0123-gif.github.io/login-screen/'" style="margin-left:auto; background:rgba(255,255,255,0.05); color:white; border:1px solid #333; padding:10px 20px; border-radius:15px; cursor:pointer;">Switch Profile</button>
-    </div>
-    
-    <div class="tile app-small"><a href="https://onedrive.live.com" class="app-link">OneDrive</a></div>
-    <div class="tile app-small"><a href="https://vidbox.de" class="app-link">Vidbox</a></div>
 
-    <!-- ROW 2: Shared Widgets -->
-    <div class="tile main-widget">
-        <div class="widget-header">Live Scores</div>
-        <div style="flex:1; display:flex; align-items:center; justify-content:center; color:#444;">No current live matches.</div>
-    </div>
-
-    <div class="tile main-widget">
-        <div class="widget-header">Calendar</div>
-        <iframe src="https://calendar.google.com/calendar/embed?src=en.dutch%23holiday%40group.v.calendar.google.com&ctz=Europe%2FAmsterdam"></iframe>
-    </div>
-
-    <div class="tile main-widget" style="background:transparent;">
-        <div class="widget-header">Headlines</div>
-        <div style="flex:1;">
-            <rssapp-carousel id="tgVNLlUheA584JKg"></rssapp-carousel>
-            <script src="https://widget.rss.app/v1/carousel.js" type="text/javascript" async></script>
+        <div class="tile app-tile" data-id="app1">
+            <a href="https://onedrive.live.com" class="app-link">OneDrive</a>
         </div>
-    </div>
 
-    <!-- ROW 3: Universal Extra Row -->
-    <div class="tile extra-widget">
-        <div class="widget-header">Weather</div>
-        <div style="padding:0 20px; color:#888;">
-            <span style="font-size:2rem; color:white;">14°C</span><br>
-            Nieuwegein, NL
+        <div class="tile app-tile" data-id="app2">
+            <a href="https://vidbox.de" class="app-link">Vidbox</a>
         </div>
-    </div>
 
-    <div class="tile extra-widget">
-        <div class="widget-header">Family Notes</div>
-        <div style="padding:0 20px; font-size:0.9rem; color:#666;">
-            Tap to add a reminder or shopping list item...
-        </div>
-    </div>
-
-    <div class="tile extra-widget">
-        <div class="widget-header">Device Status</div>
-        <div style="padding:0 20px;">
-            <p style="font-size:0.7rem; color:#444;">Storage: Healthy</p>
-            <div style="width:100%; height:6px; background:#222; border-radius:3px;">
-                <div style="width:40%; height:100%; background:var(--accent); border-radius:3px;"></div>
+        <div class="tile widget-main" data-id="scores">
+            <div class="header-box">
+                <span class="header-title">Live Scores</span>
+            </div>
+            <div class="content-area" style="display:flex; align-items:center; justify-content:center; color: var(--text-dim);">
+                No active matches in-play.
             </div>
         </div>
+
+        <div class="tile widget-main" data-id="calendar">
+            <div class="header-box">
+                <span class="header-title">Calendar</span>
+            </div>
+            <div class="content-area">
+                <iframe src="https://calendar.google.com/calendar/embed?src=en.dutch%23holiday%40group.v.calendar.google.com&ctz=Europe%2FAmsterdam"></iframe>
+            </div>
+        </div>
+
+        <div class="tile widget-main" data-id="news" style="background: transparent;">
+            <div class="header-box">
+                <span class="header-title">Global Headlines</span>
+            </div>
+            <div class="content-area">
+                <rssapp-carousel id="tgVNLlUheA584JKg"></rssapp-carousel>
+                <script src="https://widget.rss.app/v1/carousel.js" type="text/javascript" async></script>
+            </div>
+        </div>
+
+        <div class="tile widget-small" data-id="weather">
+            <div class="header-box">
+                <span class="header-title">Weather</span>
+            </div>
+            <div class="status-pill">
+                <span style="font-size: 2.2rem; font-weight: 700;">14°C</span>
+                <div style="color: var(--text-dim); margin-top: 4px;">Nieuwegein, NL</div>
+            </div>
+        </div>
+
+        <div class="tile widget-small" data-id="cloud-notes">
+            <div class="header-box">
+                <span class="header-title">Family Cloud Notes</span>
+                <span id="sync-indicator">Synced</span>
+            </div>
+            <textarea id="family-notes" placeholder="Anyone can edit this..."></textarea>
+        </div>
+
+        <div class="tile widget-small" data-id="system">
+            <div class="header-box">
+                <span class="header-title">System Status</span>
+            </div>
+            <div class="status-pill">
+                <div style="font-size: 0.85rem; color: var(--text-dim);">MacBook Air M3 • Storage</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 42%;"></div>
+                </div>
+                <div style="font-size: 0.7rem; color: #555; margin-top: 8px;">64.2 GB Available</div>
+            </div>
+        </div>
+
+        <div class="tile widget-small" data-id="extra" style="display:flex; align-items:center; justify-content:center;">
+            <div style="font-size: 2rem; opacity: 0.1;">✦</div>
+        </div>
+
     </div>
 
-    <div class="tile extra-widget" style="display:flex; justify-content:center; align-items:center; color:#222; font-size:2rem;">
-        ✦
-    </div>
-</div>
+    <script>
+        // --- 1. CLOUD NOTES LOGIC ---
+        // Using Pantry API for true cross-device synchronization
+        const PANTRY_ID = "94635661-89e8-466d-965a-0761e3893322";
+        const BASKET_NAME = "family_notes_v2";
+        const API_URL = `https://getpantry.cloud/apiv1/pantry/${PANTRY_ID}/basket/${BASKET_NAME}`;
+        
+        const notesInput = document.getElementById('family-notes');
+        const syncLabel = document.getElementById('sync-indicator');
 
-<script>
-    let isEditing = false;
-    let sortable;
-
-    function toggleEditMode() {
-        const grid = document.getElementById('main-grid');
-        const fab = document.getElementById('editBtn');
-        isEditing = !isEditing;
-
-        if (isEditing) {
-            grid.classList.add('editing');
-            fab.innerText = "✓";
-            sortable = Sortable.create(grid, { animation: 250 });
-        } else {
-            grid.classList.remove('editing');
-            fab.innerText = "⚙️";
-            if(sortable) sortable.destroy();
+        async function fetchCloudNotes() {
+            try {
+                const response = await fetch(API_URL);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.text !== undefined && document.activeElement !== notesInput) {
+                        notesInput.value = data.text;
+                    }
+                }
+            } catch (err) { console.error("Sync Load Failed"); }
         }
-    }
 
-    function updateClock() {
-        const now = new Date();
-        document.getElementById('clock').textContent = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-        document.getElementById('live-date').textContent = now.toLocaleDateString('en-NL', { weekday: 'long', day: 'numeric', month: 'long' });
-    }
+        let saveTimeout;
+        notesInput.addEventListener('input', () => {
+            syncLabel.style.opacity = "1";
+            syncLabel.innerText = "Saving...";
+            syncLabel.style.color = "#ff9500";
 
-    window.onload = () => {
-        document.getElementById('user-img').src = localStorage.getItem('active_pic') || '';
-        updateClock();
-        setInterval(updateClock, 1000);
-    };
-</script>
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(async () => {
+                try {
+                    await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ text: notesInput.value })
+                    });
+                    syncLabel.innerText = "Synced";
+                    syncLabel.style.color = "#34c759";
+                    setTimeout(() => { syncLabel.style.opacity = "0"; }, 2000);
+                } catch (err) {
+                    syncLabel.innerText = "Sync Error";
+                    syncLabel.style.color = "#ff3b30";
+                }
+            }, 1500); // Wait for typing to pause
+        });
+
+        // --- 2. CLOCK & IDENTITY ---
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+            const dateStr = now.toLocaleDateString('en-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+            
+            document.getElementById('clock').textContent = timeStr;
+            document.getElementById('live-date').textContent = dateStr;
+        }
+
+        // --- 3. DRAG & DROP EDIT MODE ---
+        let sortableInstance;
+        function toggleEditMode() {
+            const body = document.body;
+            const grid = document.getElementById('main-grid');
+            const btn = document.getElementById('editToggle');
+
+            if (body.classList.contains('editing-active')) {
+                // Save and Lock
+                body.classList.remove('editing-active');
+                btn.innerText = "⚙️";
+                if (sortableInstance) {
+                    const order = sortableInstance.toArray();
+                    localStorage.setItem('hub-tile-order-v2', JSON.stringify(order));
+                    sortableInstance.destroy();
+                }
+            } else {
+                // Unlock and Wiggle
+                body.classList.add('editing-active');
+                btn.innerText = "✓";
+                sortableInstance = Sortable.create(grid, {
+                    animation: 300,
+                    ghostClass: 'sortable-ghost',
+                    handle: '.tile',
+                    onEnd: () => { console.log("New Position Saved"); }
+                });
+            }
+        }
+
+        // --- 4. INITIALIZATION ---
+        window.onload = () => {
+            // Load Profile Pic
+            const activePic = localStorage.getItem('active_pic');
+            if (activePic) document.getElementById('user-img').src = activePic;
+
+            // Start Services
+            updateClock();
+            setInterval(updateClock, 1000);
+            fetchCloudNotes();
+            setInterval(fetchCloudNotes, 15000); // Auto-refresh notes every 15s
+
+            // Restore Tile Order
+            const savedOrder = JSON.parse(localStorage.getItem('hub-tile-order-v2'));
+            if (savedOrder) {
+                const grid = document.getElementById('main-grid');
+                const tiles = Array.from(grid.children);
+                savedOrder.forEach(id => {
+                    const tile = tiles.find(t => t.getAttribute('data-id') === id);
+                    if (tile) grid.appendChild(tile);
+                });
+            }
+        };
+    </script>
 </body>
 </html>
