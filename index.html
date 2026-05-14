@@ -4,135 +4,156 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>K-OS | Hub</title>
-    <!-- Adding SortableJS for smooth dragging -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
-        :root { --accent: #007aff; --glass: rgba(255, 255, 255, 0.05); }
+        :root { 
+            --accent: #007aff; 
+            --glass: rgba(255, 255, 255, 0.05); 
+            --card-bg: #111;
+            --border: #222;
+            --radius: 28px; /* Standardized radius */
+        }
         
         body { 
             background: #000; 
             color: white; 
-            font-family: -apple-system, sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             margin: 0; 
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* 6-Section Grid */
+        /* Standardized Grid Alignment */
         .bento-grid {
             display: grid;
-            grid-template-columns: 1fr 1.5fr 1fr; 
-            grid-template-rows: 180px 1fr; 
+            grid-template-columns: repeat(4, 1fr); /* 4 Columns top */
+            grid-auto-rows: minmax(180px, auto);
             gap: 20px;
             padding: 30px;
-            height: 100vh;
             box-sizing: border-box;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
         }
 
         .tile { 
-            background: #111; 
-            border-radius: 28px; 
-            border: 1px solid #222; 
+            background: var(--card-bg); 
+            border-radius: var(--radius); 
+            border: 1px solid var(--border); 
             display: flex;
             flex-direction: column;
             position: relative;
             overflow: hidden;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition: transform 0.2s ease, border-color 0.2s ease;
         }
 
-        /* Apple-style Wiggle Animation */
+        /* Widget Headers Typography */
+        .widget-header { 
+            padding: 20px 20px 10px; 
+            color: var(--accent); /* Consistent Blue Accent */
+            font-weight: 700; 
+            font-size: 0.85rem; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+        }
+
+        /* Top Row Specifics */
+        .profile-section { 
+            grid-column: span 2; 
+            flex-direction: row; 
+            align-items: center; 
+            justify-content: center; /* Centered clock */
+            gap: 25px;
+            padding: 20px;
+        }
+
+        /* Empty State Styling */
+        .empty-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #444; /* Dimmed */
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        /* Bottom Row Scaling */
+        .calendar-tile { grid-column: span 2; grid-row: span 2; height: 500px; }
+        .news-tile { grid-column: span 2; grid-row: span 2; height: 500px; background: transparent; }
+
+        /* Calendar Scaling */
+        .cal-frame { 
+            filter: invert(0.9) hue-rotate(180deg) brightness(0.8); 
+            width: 100%; 
+            height: 100%; 
+            border: none;
+            display: block;
+        }
+
+        /* App & Toggle Buttons */
+        .app-btn, .edit-toggle-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+        .app-btn:hover { border-color: var(--accent); background: #1a1a1a; }
+
+        /* Apple Wiggle for Edit Mode */
         @keyframes wiggle {
-            0% { transform: rotate(-1deg); }
-            50% { transform: rotate(1.5deg); }
-            100% { transform: rotate(-1deg); }
+            0% { transform: rotate(-0.5deg); }
+            50% { transform: rotate(0.5deg); }
+            100% { transform: rotate(-0.5deg); }
         }
+        .editing .tile { animation: wiggle 0.3s infinite; border-color: #333; }
 
-        .editing .tile {
-            animation: wiggle 0.3s infinite ease-in-out;
-            cursor: grab;
-            border-color: #444;
+        /* Mobile Responsiveness */
+        @media (max-width: 850px) {
+            .bento-grid { grid-template-columns: 1fr; }
+            .profile-section, .calendar-tile, .news-tile { grid-column: span 1; height: auto; min-height: 250px; }
         }
-
-        .editing .tile:active { cursor: grabbing; }
-
-        /* Disable iframe interactions while editing so we can drag them */
-        .editing iframe, .editing rssapp-carousel {
-            pointer-events: none;
-        }
-
-        /* Ghost element while dragging */
-        .sortable-ghost {
-            opacity: 0.3;
-            transform: scale(0.9);
-        }
-
-        /* Layout styles */
-        .profile-section { padding: 25px; display: flex; align-items: center; justify-content: space-between; }
-        #clock { font-size: 2.8rem; font-weight: 700; line-height: 1; }
-        #live-date { color: #888; font-size: 1rem; margin-top: 5px; }
-        
-        .apps-section { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; border: none !important; background: transparent !important; animation: none !important; }
-        
-        .app-btn {
-            background: #111; border: 1px solid #222; border-radius: 24px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-decoration: none; color: white; transition: 0.3s; height: 100%;
-        }
-
-        .widget-header { padding: 20px; color: var(--accent); font-weight: bold; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
-        .content-fill { flex: 1; width: 100%; overflow: hidden; }
-        .cal-frame { filter: invert(0.9) hue-rotate(180deg) brightness(0.8); width: 100%; height: 100%; border: none; }
-        
-        .switch-btn, .edit-toggle-btn { 
-            background: rgba(255,255,255,0.1); border: none; color: white; 
-            padding: 8px 16px; border-radius: 12px; cursor: pointer; font-size: 0.8rem;
-        }
-        .editing .edit-toggle-btn { background: var(--accent); }
     </style>
 </head>
 <body>
 
 <div class="bento-grid" id="main-grid">
-    <!-- 1. Profile & Time -->
-    <div class="tile profile-section" data-id="1">
-        <div style="display: flex; align-items: center;">
-            <img id="user-img" src="" style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--accent); margin-right: 20px; object-fit: cover;">
-            <div>
-                <div id="clock">00:00</div>
-                <div id="live-date">...</div>
-            </div>
+    <!-- Top Row: 4 Sections (via span logic) -->
+    <div class="tile profile-section">
+        <img id="user-img" src="" style="width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover;">
+        <div style="text-align: center;">
+            <div id="clock" style="font-size: 2.5rem; font-weight: 700;">00:00</div>
+            <div id="live-date" style="color: #666; font-size: 0.9rem;">...</div>
         </div>
-        <button class="switch-btn" onclick="location.href='https://khristiankorir0123-gif.github.io/login-screen/'">Switch</button>
+        <button class="edit-toggle-btn" style="height: auto; padding: 10px 20px;" onclick="location.href='https://khristiankorir0123-gif.github.io/login-screen/'">Switch</button>
     </div>
 
-    <!-- 2. Apps -->
-    <div class="tile apps-section" data-id="2">
-        <a href="https://onedrive.live.com" class="app-btn"><span>☁️</span>OneDrive</a>
-        <a href="https://vidbox.de" class="app-btn"><span>🎬</span>Vidbox</a>
-    </div>
+    <div class="tile"><a href="https://onedrive.live.com" class="app-btn">OneDrive</a></div>
+    <div class="tile"><a href="https://vidbox.de" class="app-btn">Vidbox</a></div>
 
-    <!-- 3. Edit Control -->
-    <div class="tile" data-id="3" style="justify-content: center; align-items: center; background: rgba(0,122,255,0.03);">
-        <button class="edit-toggle-btn" onclick="toggleEditMode()">⚙️ Edit Hub</button>
-    </div>
-
-    <!-- 4. Score Feed -->
-    <div class="tile" data-id="4">
+    <!-- Bottom Row: 3 Sections Wide Layout -->
+    <div class="tile">
         <div class="widget-header">Live Scores</div>
-        <div class="content-fill" id="match-list">
-            <div style="padding: 20px; color: #444;">Live Data restricted.</div>
-        </div>
+        <div class="empty-state" id="match-list">No live matches</div>
     </div>
 
-    <!-- 5. Large Calendar -->
-    <div class="tile" data-id="5">
+    <div class="tile calendar-tile">
+        <div class="widget-header">Calendar</div>
         <iframe src="https://calendar.google.com/calendar/embed?src=en.dutch%23holiday%40group.v.calendar.google.com&ctz=Europe%2FAmsterdam" class="cal-frame"></iframe>
     </div>
 
-    <!-- 6. News Carousel -->
-    <div class="tile" data-id="6">
-        <div class="widget-header">Global Headlines</div>
-        <div class="content-fill">
+    <div class="tile news-tile">
+        <div class="widget-header">Headlines</div>
+        <div style="flex: 1; background: transparent;">
             <rssapp-carousel id="tgVNLlUheA584JKg"></rssapp-carousel>
             <script src="https://widget.rss.app/v1/carousel.js" type="text/javascript" async></script>
         </div>
@@ -140,33 +161,6 @@
 </div>
 
 <script>
-    let isEditing = false;
-    let sortable;
-
-    function toggleEditMode() {
-        const grid = document.getElementById('main-grid');
-        const btn = document.querySelector('.edit-toggle-btn');
-        isEditing = !isEditing;
-
-        if (isEditing) {
-            grid.classList.add('editing');
-            btn.innerText = "Done";
-            // Initialize Sortable
-            sortable = Sortable.create(grid, {
-                animation: 250,
-                ghostClass: 'sortable-ghost',
-                onEnd: function() {
-                    const order = sortable.toArray();
-                    localStorage.setItem('hub-tile-order', JSON.stringify(order));
-                }
-            });
-        } else {
-            grid.classList.remove('editing');
-            btn.innerText = "⚙️ Edit Hub";
-            if(sortable) sortable.destroy();
-        }
-    }
-
     function updateClock() {
         const now = new Date();
         document.getElementById('clock').textContent = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
@@ -177,12 +171,6 @@
         document.getElementById('user-img').src = localStorage.getItem('active_pic') || '';
         updateClock();
         setInterval(updateClock, 1000);
-        
-        // Load saved order if it exists
-        const savedOrder = localStorage.getItem('hub-tile-order');
-        if (savedOrder) {
-            // Logic to reorder elements based on ID can go here
-        }
     };
 </script>
 </body>
