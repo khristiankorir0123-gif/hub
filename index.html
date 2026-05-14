@@ -8,34 +8,27 @@
     <style>
         :root { 
             --accent: #007aff; 
-            --glass: rgba(255, 255, 255, 0.05); 
             --card-bg: #111;
             --border: #222;
-            --radius: 28px; /* Standardized radius */
+            --radius: 24px;
         }
         
         body { 
             background: #000; 
             color: white; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
             margin: 0; 
-            min-height: 100vh;
-            overflow-x: hidden;
-            display: flex;
-            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
-        /* Standardized Grid Alignment */
+        /* 12-Column Grid for perfect math */
         .bento-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr); /* 4 Columns top */
-            grid-auto-rows: minmax(180px, auto);
+            grid-template-columns: repeat(12, 1fr);
             gap: 20px;
-            padding: 30px;
-            box-sizing: border-box;
-            max-width: 1600px;
+            max-width: 1400px;
             margin: 0 auto;
-            width: 100%;
         }
 
         .tile { 
@@ -44,116 +37,89 @@
             border: 1px solid var(--border); 
             display: flex;
             flex-direction: column;
-            position: relative;
             overflow: hidden;
-            transition: transform 0.2s ease, border-color 0.2s ease;
+            min-height: 160px;
         }
 
-        /* Widget Headers Typography */
+        /* TOP ROW: 4 Sections (12 / 4 = 3 columns each) */
+        .col-4-grid { grid-column: span 3; }
+        .profile-section { grid-column: span 6; flex-direction: row; align-items: center; padding: 0 25px; justify-content: space-between; }
+
+        /* BOTTOM ROW: 3 Sections (12 / 3 = 4 columns each) */
+        .col-3-grid { grid-column: span 4; height: 450px; }
+
+        /* Widget Details */
         .widget-header { 
             padding: 20px 20px 10px; 
-            color: var(--accent); /* Consistent Blue Accent */
+            color: var(--accent); 
             font-weight: 700; 
-            font-size: 0.85rem; 
+            font-size: 0.8rem; 
             text-transform: uppercase; 
             letter-spacing: 1px;
         }
 
-        /* Top Row Specifics */
-        .profile-section { 
-            grid-column: span 2; 
-            flex-direction: row; 
-            align-items: center; 
-            justify-content: center; /* Centered clock */
-            gap: 25px;
-            padding: 20px;
+        #clock { font-size: 2.8rem; font-weight: 700; margin: 0; }
+        #live-date { color: #666; font-size: 0.9rem; }
+
+        .app-btn {
+            background: #181818; border: 1px solid #282828; border-radius: 18px;
+            color: white; text-decoration: none; display: flex; align-items: center;
+            justify-content: center; height: 100%; transition: 0.2s; font-weight: 500;
         }
+        .app-btn:hover { border-color: var(--accent); background: #202020; }
 
-        /* Empty State Styling */
-        .empty-state {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: #444; /* Dimmed */
-            font-size: 0.9rem;
-            text-align: center;
-        }
-
-        /* Bottom Row Scaling */
-        .calendar-tile { grid-column: span 2; grid-row: span 2; height: 500px; }
-        .news-tile { grid-column: span 2; grid-row: span 2; height: 500px; background: transparent; }
-
-        /* Calendar Scaling */
         .cal-frame { 
             filter: invert(0.9) hue-rotate(180deg) brightness(0.8); 
-            width: 100%; 
-            height: 100%; 
-            border: none;
-            display: block;
+            width: 100%; height: 100%; border: none; flex-grow: 1;
         }
 
-        /* App & Toggle Buttons */
-        .app-btn, .edit-toggle-btn {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            color: white;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            font-weight: 500;
-            transition: 0.3s;
-        }
-        .app-btn:hover { border-color: var(--accent); background: #1a1a1a; }
+        /* News Widget Fix */
+        .rss-container { flex: 1; background: transparent !important; }
+        rssapp-carousel { background: transparent !important; }
 
-        /* Apple Wiggle for Edit Mode */
-        @keyframes wiggle {
-            0% { transform: rotate(-0.5deg); }
-            50% { transform: rotate(0.5deg); }
-            100% { transform: rotate(-0.5deg); }
-        }
-        .editing .tile { animation: wiggle 0.3s infinite; border-color: #333; }
+        /* Empty State */
+        .empty-text { flex: 1; display: flex; align-items: center; justify-content: center; color: #333; font-size: 0.9rem; }
 
-        /* Mobile Responsiveness */
-        @media (max-width: 850px) {
+        /* Mobile Fix */
+        @media (max-width: 900px) {
             .bento-grid { grid-template-columns: 1fr; }
-            .profile-section, .calendar-tile, .news-tile { grid-column: span 1; height: auto; min-height: 250px; }
+            .col-4-grid, .col-3-grid, .profile-section { grid-column: span 1; height: auto; min-height: 180px; }
+            .col-3-grid { height: 400px; }
         }
     </style>
 </head>
 <body>
 
 <div class="bento-grid" id="main-grid">
-    <!-- Top Row: 4 Sections (via span logic) -->
+    <!-- TOP ROW (Total 12 units) -->
     <div class="tile profile-section">
-        <img id="user-img" src="" style="width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover;">
-        <div style="text-align: center;">
-            <div id="clock" style="font-size: 2.5rem; font-weight: 700;">00:00</div>
-            <div id="live-date" style="color: #666; font-size: 0.9rem;">...</div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <img id="user-img" src="" style="width: 65px; height: 65px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover;">
+            <div>
+                <h1 id="clock">00:00</h1>
+                <p id="live-date">...</p>
+            </div>
         </div>
-        <button class="edit-toggle-btn" style="height: auto; padding: 10px 20px;" onclick="location.href='https://khristiankorir0123-gif.github.io/login-screen/'">Switch</button>
+        <button onclick="location.href='https://khristiankorir0123-gif.github.io/login-screen/'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:white; padding:10px 18px; border-radius:12px; cursor:pointer;">Switch</button>
     </div>
+    
+    <div class="tile col-4-grid" style="padding:15px;"><a href="https://onedrive.live.com" class="app-btn">OneDrive</a></div>
+    <div class="tile col-4-grid" style="padding:15px;"><a href="https://vidbox.de" class="app-btn">Vidbox</a></div>
 
-    <div class="tile"><a href="https://onedrive.live.com" class="app-btn">OneDrive</a></div>
-    <div class="tile"><a href="https://vidbox.de" class="app-btn">Vidbox</a></div>
-
-    <!-- Bottom Row: 3 Sections Wide Layout -->
-    <div class="tile">
+    <!-- BOTTOM ROW (Total 12 units) -->
+    <div class="tile col-3-grid">
         <div class="widget-header">Live Scores</div>
-        <div class="empty-state" id="match-list">No live matches</div>
+        <div class="empty-text">No active matches</div>
     </div>
 
-    <div class="tile calendar-tile">
+    <div class="tile col-3-grid">
         <div class="widget-header">Calendar</div>
         <iframe src="https://calendar.google.com/calendar/embed?src=en.dutch%23holiday%40group.v.calendar.google.com&ctz=Europe%2FAmsterdam" class="cal-frame"></iframe>
     </div>
 
-    <div class="tile news-tile">
+    <div class="tile col-3-grid" style="background: transparent;">
         <div class="widget-header">Headlines</div>
-        <div style="flex: 1; background: transparent;">
+        <div class="rss-container">
             <rssapp-carousel id="tgVNLlUheA584JKg"></rssapp-carousel>
             <script src="https://widget.rss.app/v1/carousel.js" type="text/javascript" async></script>
         </div>
@@ -166,7 +132,6 @@
         document.getElementById('clock').textContent = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
         document.getElementById('live-date').textContent = now.toLocaleDateString('en-NL', { weekday: 'long', day: 'numeric', month: 'long' });
     }
-
     window.onload = () => {
         document.getElementById('user-img').src = localStorage.getItem('active_pic') || '';
         updateClock();
