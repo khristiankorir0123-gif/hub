@@ -10,128 +10,178 @@
             --accent: #007aff; 
             --card-bg: #111;
             --border: #222;
-            --radius: 24px;
+            --radius: 28px;
         }
         
-        body { 
-            background: #000; 
-            color: white; 
+        body, html { 
+            background: #000; color: white; 
             font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
-            margin: 0; 
-            padding: 20px;
-            box-sizing: border-box;
+            margin: 0; height: 100vh; overflow: hidden;
+            display: flex; flex-direction: column;
         }
 
-        /* 12-Column Grid for perfect math */
         .bento-grid {
             display: grid;
             grid-template-columns: repeat(12, 1fr);
+            /* Rows: Profile(180px), Main Widgets(40% height), Extra Row(Remaining) */
+            grid-template-rows: 160px 1.2fr 0.8fr; 
             gap: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
+            padding: 25px;
+            width: 100%;
+            height: 100vh;
+            box-sizing: border-box;
         }
 
         .tile { 
             background: var(--card-bg); 
             border-radius: var(--radius); 
             border: 1px solid var(--border); 
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            min-height: 160px;
+            display: flex; flex-direction: column;
+            position: relative; overflow: hidden;
         }
 
-        /* TOP ROW: 4 Sections (12 / 4 = 3 columns each) */
-        .col-4-grid { grid-column: span 3; }
-        .profile-section { grid-column: span 6; flex-direction: row; align-items: center; padding: 0 25px; justify-content: space-between; }
+        /* Float Edit Button - Circle in bottom corner */
+        .edit-fab {
+            position: fixed; bottom: 30px; right: 30px;
+            width: 50px; height: 50px; border-radius: 50%;
+            background: var(--accent); border: none; color: white;
+            box-shadow: 0 4px 15px rgba(0,122,255,0.4);
+            cursor: pointer; z-index: 100; font-size: 1.2rem;
+            display: flex; align-items: center; justify-content: center;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .edit-fab:hover { transform: scale(1.1); }
+        .editing .edit-fab { background: #34c759; transform: rotate(90deg); }
 
-        /* BOTTOM ROW: 3 Sections (12 / 3 = 4 columns each) */
-        .col-3-grid { grid-column: span 4; height: 450px; }
+        /* Wiggle effect */
+        @keyframes wiggle {
+            0% { transform: rotate(-0.5deg); }
+            50% { transform: rotate(0.5deg); }
+            100% { transform: rotate(-0.5deg); }
+        }
+        .editing .tile { animation: wiggle 0.3s infinite; cursor: grab; }
 
-        /* Widget Details */
-        .widget-header { 
-            padding: 20px 20px 10px; 
-            color: var(--accent); 
-            font-weight: 700; 
-            font-size: 0.8rem; 
-            text-transform: uppercase; 
-            letter-spacing: 1px;
+        /* Layout Assignments */
+        .profile { grid-column: span 8; flex-direction: row; align-items: center; padding: 0 30px; }
+        .app-small { grid-column: span 2; }
+        
+        .main-widget { grid-column: span 4; }
+        
+        .extra-widget { grid-column: span 3; } /* For the new bottom row */
+
+        .widget-header { padding: 20px 20px 10px; color: var(--accent); font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
+        #clock { font-size: 3.5rem; font-weight: 700; margin: 0; letter-spacing: -2px; }
+        
+        .app-link {
+            background: #181818; border-radius: 20px;
+            color: white; text-decoration: none; display: flex;
+            align-items: center; justify-content: center; height: 100%;
         }
 
-        #clock { font-size: 2.8rem; font-weight: 700; margin: 0; }
-        #live-date { color: #666; font-size: 0.9rem; }
+        iframe { filter: invert(0.9) hue-rotate(180deg) brightness(0.8); width: 100%; height: 100%; border: none; }
 
-        .app-btn {
-            background: #181818; border: 1px solid #282828; border-radius: 18px;
-            color: white; text-decoration: none; display: flex; align-items: center;
-            justify-content: center; height: 100%; transition: 0.2s; font-weight: 500;
-        }
-        .app-btn:hover { border-color: var(--accent); background: #202020; }
-
-        .cal-frame { 
-            filter: invert(0.9) hue-rotate(180deg) brightness(0.8); 
-            width: 100%; height: 100%; border: none; flex-grow: 1;
-        }
-
-        /* News Widget Fix */
-        .rss-container { flex: 1; background: transparent !important; }
-        rssapp-carousel { background: transparent !important; }
-
-        /* Empty State */
-        .empty-text { flex: 1; display: flex; align-items: center; justify-content: center; color: #333; font-size: 0.9rem; }
-
-        /* Mobile Fix */
         @media (max-width: 900px) {
-            .bento-grid { grid-template-columns: 1fr; }
-            .col-4-grid, .col-3-grid, .profile-section { grid-column: span 1; height: auto; min-height: 180px; }
-            .col-3-grid { height: 400px; }
+            body, html { height: auto; overflow-y: auto; }
+            .bento-grid { display: flex; flex-direction: column; height: auto; }
+            .tile { min-height: 200px; }
         }
     </style>
 </head>
 <body>
 
+<button class="edit-fab" id="editBtn" onclick="toggleEditMode()">⚙️</button>
+
 <div class="bento-grid" id="main-grid">
-    <!-- TOP ROW (Total 12 units) -->
-    <div class="tile profile-section">
-        <div style="display: flex; align-items: center; gap: 20px;">
-            <img id="user-img" src="" style="width: 65px; height: 65px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover;">
-            <div>
-                <h1 id="clock">00:00</h1>
-                <p id="live-date">...</p>
-            </div>
+    <!-- ROW 1: Identity -->
+    <div class="tile profile">
+        <img id="user-img" src="" style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--accent); margin-right: 25px;">
+        <div>
+            <h1 id="clock">00:00</h1>
+            <p id="live-date" style="color: #666; margin-top: 5px;"></p>
         </div>
-        <button onclick="location.href='https://khristiankorir0123-gif.github.io/login-screen/'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:white; padding:10px 18px; border-radius:12px; cursor:pointer;">Switch</button>
+        <button onclick="location.href='https://khristiankorir0123-gif.github.io/login-screen/'" style="margin-left:auto; background:rgba(255,255,255,0.05); color:white; border:1px solid #333; padding:10px 20px; border-radius:15px; cursor:pointer;">Switch Profile</button>
     </div>
     
-    <div class="tile col-4-grid" style="padding:15px;"><a href="https://onedrive.live.com" class="app-btn">OneDrive</a></div>
-    <div class="tile col-4-grid" style="padding:15px;"><a href="https://vidbox.de" class="app-btn">Vidbox</a></div>
+    <div class="tile app-small"><a href="https://onedrive.live.com" class="app-link">OneDrive</a></div>
+    <div class="tile app-small"><a href="https://vidbox.de" class="app-link">Vidbox</a></div>
 
-    <!-- BOTTOM ROW (Total 12 units) -->
-    <div class="tile col-3-grid">
+    <!-- ROW 2: Primary Data -->
+    <div class="tile main-widget">
         <div class="widget-header">Live Scores</div>
-        <div class="empty-text">No active matches</div>
+        <div style="flex:1; display:flex; align-items:center; justify-content:center; color:#333;">Searching for live matches...</div>
     </div>
 
-    <div class="tile col-3-grid">
+    <div class="tile main-widget">
         <div class="widget-header">Calendar</div>
-        <iframe src="https://calendar.google.com/calendar/embed?src=en.dutch%23holiday%40group.v.calendar.google.com&ctz=Europe%2FAmsterdam" class="cal-frame"></iframe>
+        <iframe src="https://calendar.google.com/calendar/embed?src=en.dutch%23holiday%40group.v.calendar.google.com&ctz=Europe%2FAmsterdam"></iframe>
     </div>
 
-    <div class="tile col-3-grid" style="background: transparent;">
+    <div class="tile main-widget" style="background:transparent;">
         <div class="widget-header">Headlines</div>
-        <div class="rss-container">
+        <div style="flex:1;">
             <rssapp-carousel id="tgVNLlUheA584JKg"></rssapp-carousel>
             <script src="https://widget.rss.app/v1/carousel.js" type="text/javascript" async></script>
         </div>
     </div>
+
+    <!-- ROW 3: Extra Row to fill space -->
+    <div class="tile extra-widget">
+        <div class="widget-header">Storage Hub</div>
+        <div style="padding:0 20px;">
+            <p style="font-size:0.8rem; color:#888;">MacBook Air M3</p>
+            <div style="width:100%; height:8px; background:#222; border-radius:4px;">
+                <div style="width:65%; height:100%; background:var(--accent); border-radius:4px;"></div>
+            </div>
+            <p style="font-size:0.7rem; color:#444; margin-top:10px;">Primary Drive: 16.4GB Cache cleared</p>
+        </div>
+    </div>
+
+    <div class="tile extra-widget">
+        <div class="widget-header">KO Productions</div>
+        <div style="padding:0 20px; font-size:0.9rem; color:#666;">
+            • Snake Animation (In Progress)<br>
+            • Frame Rate: 12fps
+        </div>
+    </div>
+
+    <div class="tile extra-widget">
+        <div class="widget-header">Academic</div>
+        <div style="padding:0 20px; font-size:0.85rem; color:#666;">
+            Geometry & Spanish IB prep
+        </div>
+    </div>
+
+    <div class="tile extra-widget" style="background:rgba(0,122,255,0.05); justify-content:center; align-items:center;">
+        <span style="font-size:1.5rem;">⚽</span>
+    </div>
 </div>
 
 <script>
+    let isEditing = false;
+    let sortable;
+
+    function toggleEditMode() {
+        const grid = document.getElementById('main-grid');
+        const fab = document.getElementById('editBtn');
+        isEditing = !isEditing;
+
+        if (isEditing) {
+            grid.classList.add('editing');
+            fab.innerText = "✓";
+            sortable = Sortable.create(grid, { animation: 250 });
+        } else {
+            grid.classList.remove('editing');
+            fab.innerText = "⚙️";
+            if(sortable) sortable.destroy();
+        }
+    }
+
     function updateClock() {
         const now = new Date();
         document.getElementById('clock').textContent = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
         document.getElementById('live-date').textContent = now.toLocaleDateString('en-NL', { weekday: 'long', day: 'numeric', month: 'long' });
     }
+
     window.onload = () => {
         document.getElementById('user-img').src = localStorage.getItem('active_pic') || '';
         updateClock();
