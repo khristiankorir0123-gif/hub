@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>K-OS | Hub</title>
+    <title>K-OS | Family Hub</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
         :root { 
@@ -23,7 +23,6 @@
         .bento-grid {
             display: grid;
             grid-template-columns: repeat(12, 1fr);
-            /* Rows: Profile(180px), Main Widgets(40% height), Extra Row(Remaining) */
             grid-template-rows: 160px 1.2fr 0.8fr; 
             gap: 20px;
             padding: 25px;
@@ -40,7 +39,7 @@
             position: relative; overflow: hidden;
         }
 
-        /* Float Edit Button - Circle in bottom corner */
+        /* Universal Edit Button */
         .edit-fab {
             position: fixed; bottom: 30px; right: 30px;
             width: 50px; height: 50px; border-radius: 50%;
@@ -48,26 +47,20 @@
             box-shadow: 0 4px 15px rgba(0,122,255,0.4);
             cursor: pointer; z-index: 100; font-size: 1.2rem;
             display: flex; align-items: center; justify-content: center;
-            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .edit-fab:hover { transform: scale(1.1); }
-        .editing .edit-fab { background: #34c759; transform: rotate(90deg); }
 
-        /* Wiggle effect */
+        .editing .tile { animation: wiggle 0.3s infinite; cursor: grab; }
         @keyframes wiggle {
             0% { transform: rotate(-0.5deg); }
             50% { transform: rotate(0.5deg); }
             100% { transform: rotate(-0.5deg); }
         }
-        .editing .tile { animation: wiggle 0.3s infinite; cursor: grab; }
 
         /* Layout Assignments */
         .profile { grid-column: span 8; flex-direction: row; align-items: center; padding: 0 30px; }
         .app-small { grid-column: span 2; }
-        
         .main-widget { grid-column: span 4; }
-        
-        .extra-widget { grid-column: span 3; } /* For the new bottom row */
+        .extra-widget { grid-column: span 3; }
 
         .widget-header { padding: 20px 20px 10px; color: var(--accent); font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
         #clock { font-size: 3.5rem; font-weight: 700; margin: 0; letter-spacing: -2px; }
@@ -92,9 +85,9 @@
 <button class="edit-fab" id="editBtn" onclick="toggleEditMode()">⚙️</button>
 
 <div class="bento-grid" id="main-grid">
-    <!-- ROW 1: Identity -->
+    <!-- ROW 1: Identity & Time -->
     <div class="tile profile">
-        <img id="user-img" src="" style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--accent); margin-right: 25px;">
+        <img id="user-img" src="" style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--accent); margin-right: 25px; object-fit: cover;">
         <div>
             <h1 id="clock">00:00</h1>
             <p id="live-date" style="color: #666; margin-top: 5px;"></p>
@@ -105,10 +98,10 @@
     <div class="tile app-small"><a href="https://onedrive.live.com" class="app-link">OneDrive</a></div>
     <div class="tile app-small"><a href="https://vidbox.de" class="app-link">Vidbox</a></div>
 
-    <!-- ROW 2: Primary Data -->
+    <!-- ROW 2: Shared Widgets -->
     <div class="tile main-widget">
         <div class="widget-header">Live Scores</div>
-        <div style="flex:1; display:flex; align-items:center; justify-content:center; color:#333;">Searching for live matches...</div>
+        <div style="flex:1; display:flex; align-items:center; justify-content:center; color:#444;">No current live matches.</div>
     </div>
 
     <div class="tile main-widget">
@@ -124,35 +117,34 @@
         </div>
     </div>
 
-    <!-- ROW 3: Extra Row to fill space -->
+    <!-- ROW 3: Universal Extra Row -->
     <div class="tile extra-widget">
-        <div class="widget-header">Storage Hub</div>
-        <div style="padding:0 20px;">
-            <p style="font-size:0.8rem; color:#888;">MacBook Air M3</p>
-            <div style="width:100%; height:8px; background:#222; border-radius:4px;">
-                <div style="width:65%; height:100%; background:var(--accent); border-radius:4px;"></div>
-            </div>
-            <p style="font-size:0.7rem; color:#444; margin-top:10px;">Primary Drive: 16.4GB Cache cleared</p>
+        <div class="widget-header">Weather</div>
+        <div style="padding:0 20px; color:#888;">
+            <span style="font-size:2rem; color:white;">14°C</span><br>
+            Nieuwegein, NL
         </div>
     </div>
 
     <div class="tile extra-widget">
-        <div class="widget-header">KO Productions</div>
+        <div class="widget-header">Family Notes</div>
         <div style="padding:0 20px; font-size:0.9rem; color:#666;">
-            • Snake Animation (In Progress)<br>
-            • Frame Rate: 12fps
+            Tap to add a reminder or shopping list item...
         </div>
     </div>
 
     <div class="tile extra-widget">
-        <div class="widget-header">Academic</div>
-        <div style="padding:0 20px; font-size:0.85rem; color:#666;">
-            Geometry & Spanish IB prep
+        <div class="widget-header">Device Status</div>
+        <div style="padding:0 20px;">
+            <p style="font-size:0.7rem; color:#444;">Storage: Healthy</p>
+            <div style="width:100%; height:6px; background:#222; border-radius:3px;">
+                <div style="width:40%; height:100%; background:var(--accent); border-radius:3px;"></div>
+            </div>
         </div>
     </div>
 
-    <div class="tile extra-widget" style="background:rgba(0,122,255,0.05); justify-content:center; align-items:center;">
-        <span style="font-size:1.5rem;">⚽</span>
+    <div class="tile extra-widget" style="display:flex; justify-content:center; align-items:center; color:#222; font-size:2rem;">
+        ✦
     </div>
 </div>
 
