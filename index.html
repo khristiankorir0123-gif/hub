@@ -3,31 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>K-OS | Titan Command Center</title>
+    <title>K-OS | Apex Horizon</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         /* ================================================================
-           TITAN DESIGN SYSTEM (macOS / iOS Hybrid)
-           Optimized for M3 MacBook Air (2560x1664)
+           APEX DESIGN LANGUAGE (ADL)
+           Custom-tuned for the M3 Liquid Retina Display
            ================================================================
         */
         :root {
             --accent: #007aff;
-            --accent-gradient: linear-gradient(135deg, #007aff, #00c6ff);
-            --bg-color: #000000;
-            --card-bg: rgba(28, 28, 30, 0.7);
-            --card-border: rgba(255, 255, 255, 0.1);
+            --accent-soft: rgba(0, 122, 255, 0.15);
+            --accent-glow: rgba(0, 122, 255, 0.5);
+            --bg-deep: #000000;
+            --card-bg: rgba(25, 25, 27, 0.8);
+            --card-border: rgba(255, 255, 255, 0.08);
             --text-main: #ffffff;
-            --text-muted: #8e8e93;
-            --radius-xl: 34px;
-            --radius-md: 18px;
-            --glass: blur(40px) saturate(200%);
-            --shadow-hub: 0 20px 50px rgba(0,0,0,0.5);
+            --text-dim: #8e8e93;
+            --radius-outer: 36px;
+            --radius-inner: 20px;
+            --glass-thick: blur(50px) saturate(210%);
+            --transition-swift: all 0.4s cubic-bezier(0.2, 0, 0, 1);
         }
 
-        /* --- GLOBAL RESET --- */
+        /* --- GLOBAL ARCHITECTURE --- */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -39,413 +41,470 @@
         body, html {
             width: 100%;
             height: 100vh;
-            background: var(--bg-color);
+            background: var(--bg-deep);
             color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
             overflow: hidden;
-            user-select: none;
         }
 
-        /* --- AMBIENT DEPTH --- */
-        .viewport-bg {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+        .os-container {
+            display: flex;
+            height: 100vh;
+            width: 100%;
             background: 
-                radial-gradient(circle at 10% 10%, #1a1a1a 0%, transparent 40%),
-                radial-gradient(circle at 90% 90%, #0a0a0a 0%, transparent 40%);
-            z-index: -1;
+                radial-gradient(circle at 0% 0%, #1a1a1c 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, #0d0d0f 0%, transparent 50%);
         }
 
-        /* --- THE BENTO GRID ARCHITECTURE --- */
-        .bento-container {
+        /* --- SIDEBAR NAVIGATION --- */
+        .sidebar {
+            width: 90px;
+            height: 100%;
+            background: rgba(10, 10, 10, 0.6);
+            backdrop-filter: var(--glass-thick);
+            border-right: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 0;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .nav-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: var(--transition-swift);
+            position: relative;
+        }
+
+        .nav-icon:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .nav-icon.active {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .nav-icon.active::after {
+            content: '';
+            position: absolute;
+            left: -15px;
+            width: 4px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* --- MAIN VIEWPORT --- */
+        .main-content {
+            flex: 1;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab-view {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            transform: translateY(10px);
+            padding: 40px;
+        }
+
+        .tab-view.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        /* --- TAB 1: DASHBOARD (BENTO) --- */
+        .bento-grid {
             display: grid;
             grid-template-columns: repeat(12, 1fr);
-            grid-auto-rows: 175px;
-            gap: 25px;
-            padding: 35px;
-            max-width: 2000px;
-            margin: 0 auto;
-            height: 100vh;
-            align-content: start;
+            grid-auto-rows: 170px;
+            gap: 24px;
+            height: 100%;
             overflow-y: auto;
-            scrollbar-width: none; /* Hide scrollbar for clean look */
+            padding-bottom: 60px;
         }
-        .bento-container::-webkit-scrollbar { display: none; }
+        .bento-grid::-webkit-scrollbar { display: none; }
 
-        /* --- UNIVERSAL TILE STYLING --- */
         .tile {
             background: var(--card-bg);
-            backdrop-filter: var(--glass);
-            -webkit-backdrop-filter: var(--glass);
+            backdrop-filter: var(--glass-thick);
             border: 1px solid var(--card-border);
-            border-radius: var(--radius-xl);
+            border-radius: var(--radius-outer);
             display: flex;
             flex-direction: column;
             position: relative;
             overflow: hidden;
-            transition: 
-                transform 0.4s cubic-bezier(0.2, 0, 0, 1),
-                box-shadow 0.4s ease,
-                border 0.4s ease;
+            transition: var(--transition-swift);
         }
 
-        .tile:hover {
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-
-        /* --- HEADER SECTION (CLOCK FIX) --- */
+        /* Header logic fix - Centered clock */
         .tile-header {
-            grid-column: span 8;
+            grid-column: span 12;
             display: grid;
-            grid-template-columns: 1fr auto 1fr; /* Rigid centering logic */
+            grid-template-columns: 1fr 2fr 1fr;
             align-items: center;
-            padding: 0 50px;
+            padding: 0 40px;
+            background: none;
+            border: none;
+            height: 140px;
         }
 
-        .user-block { display: flex; align-items: center; gap: 20px; }
+        .header-profile { display: flex; align-items: center; gap: 20px; }
+        #avatar-main { width: 75px; height: 75px; border-radius: 50%; border: 3px solid var(--accent); }
         
-        #avatar-frame {
-            width: 85px; height: 85px;
-            border-radius: 50%;
-            border: 3px solid var(--accent);
-            object-fit: cover;
-            box-shadow: 0 0 25px var(--accent-glow);
-        }
+        .header-clock { text-align: center; }
+        #clock-h { font-size: 4.8rem; font-weight: 800; letter-spacing: -4px; line-height: 1; }
+        #date-h { color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; font-weight: 600; font-size: 0.9rem; }
 
-        .clock-block {
-            text-align: center;
-            pointer-events: none;
-        }
-
-        #digital-time {
-            font-size: 4.5rem;
-            font-weight: 800;
-            letter-spacing: -4px;
-            line-height: 1;
-            margin-bottom: 2px;
-            filter: drop-shadow(0 0 10px rgba(255,255,255,0.2));
-        }
-
-        #digital-date {
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .action-block { display: flex; justify-content: flex-end; }
-
-        .btn-ios {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            padding: 14px 28px;
-            border-radius: 20px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .btn-ios:hover { background: var(--accent); transform: scale(1.05); }
-
-        /* --- WIDGET CONTENT --- */
-        .label-wrap {
-            padding: 25px 30px 10px;
-            font-size: 0.75rem;
-            font-weight: 900;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 2px;
+        /* --- TAB 2: EXPLORER (BROWSER) --- */
+        .explorer-frame {
+            width: 100%;
+            height: 100%;
+            background: #111;
+            border-radius: var(--radius-outer);
+            border: 1px solid var(--card-border);
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .browser-toolbar {
+            height: 60px;
+            background: #1a1a1a;
+            display: flex;
             align-items: center;
+            padding: 0 20px;
+            gap: 15px;
         }
 
-        .cloud-status {
-            width: 10px; height: 10px; border-radius: 50%;
-            background: #34c759; box-shadow: 0 0 8px #34c759;
-            transition: 0.3s;
-        }
-
-        iframe {
-            width: 100%; height: 100%;
-            border: none;
-            filter: invert(0.95) hue-rotate(180deg) brightness(0.9);
-            pointer-events: none;
-        }
-        .is-live iframe { pointer-events: auto; }
-
-        #family-textarea {
+        .address-bar {
             flex: 1;
-            background: transparent;
-            border: none;
-            color: #fff;
-            padding: 5px 30px 30px;
-            font-family: inherit;
-            font-size: 1.15rem;
-            line-height: 1.6;
-            resize: none;
-            outline: none;
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 8px 15px;
+            color: #888;
+            font-size: 0.9rem;
         }
 
-        /* --- EDITING ENGINE --- */
-        @keyframes jiggle {
+        /* --- TAB 3: MEDIA (VIBE) --- */
+        .media-hub {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            height: 100%;
+        }
+
+        .media-card {
+            background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+            border-radius: var(--radius-outer);
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- EDITING UX --- */
+        @keyframes wiggle {
             0% { transform: rotate(-0.5deg); }
             50% { transform: rotate(0.5deg); }
             100% { transform: rotate(-0.5deg); }
         }
-
-        .mode-edit .tile {
-            animation: jiggle 0.3s infinite ease-in-out;
-            border-color: rgba(255,255,255,0.4);
-            cursor: grab;
+        .mode-edit .tile { animation: wiggle 0.3s infinite; }
+        .del-btn {
+            position: absolute; top: 15px; left: 15px;
+            width: 28px; height: 28px; background: #ff3b30;
+            color: white; border-radius: 50%; display: none;
+            align-items: center; justify-content: center; font-weight: 900;
+            z-index: 100; border: 2px solid white; cursor: pointer;
         }
+        .mode-edit .del-btn { display: flex; }
 
-        .btn-delete {
-            position: absolute;
-            top: 15px; left: 15px;
-            width: 30px; height: 30px;
-            background: #ff3b30;
-            color: white;
-            border-radius: 50%;
-            border: 2px solid white;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            cursor: pointer;
-            z-index: 500;
-            box-shadow: 0 5px 15px rgba(255,59,48,0.4);
+        /* --- SETTINGS OVERLAY --- */
+        .settings-pane {
+            position: fixed; top: 0; right: -450px;
+            width: 420px; height: 100%;
+            background: rgba(15, 15, 17, 0.98);
+            backdrop-filter: blur(40px);
+            border-left: 1px solid var(--card-border);
+            z-index: 2000;
+            padding: 50px;
+            transition: right 0.5s cubic-bezier(0.19, 1, 0.22, 1);
         }
-        .mode-edit .btn-delete { display: flex; }
+        .settings-pane.open { right: 0; }
 
-        /* --- CONTROL CENTER MODAL --- */
-        .fab-trigger {
-            position: fixed; bottom: 40px; right: 40px;
-            width: 65px; height: 65px;
-            background: var(--accent-gradient);
-            border-radius: 50%; border: none;
-            color: white; font-size: 1.8rem;
-            cursor: pointer; z-index: 2000;
-            box-shadow: 0 15px 35px rgba(0, 122, 255, 0.4);
-            transition: 0.4s;
+        .menu-btn {
+            width: 100%; padding: 18px; background: rgba(255,255,255,0.04);
+            border: 1px solid transparent; border-radius: 18px;
+            color: white; margin-bottom: 12px; font-weight: 600;
+            text-align: left; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; gap: 15px;
         }
-        .fab-trigger:hover { transform: scale(1.1) rotate(90deg); }
+        .menu-btn:hover { background: var(--accent); transform: translateX(-5px); }
 
-        #titan-menu {
-            position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -50%) scale(0.9);
-            width: 440px;
-            background: rgba(28, 28, 30, 0.95);
-            backdrop-filter: blur(50px);
-            border: 1px solid #333;
-            border-radius: 40px;
-            padding: 45px;
-            z-index: 3000;
-            display: none;
-            opacity: 0;
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        .widget-lib-scroll {
+            max-height: 400px; overflow-y: auto; padding-right: 10px;
         }
-        #titan-menu.active { display: block; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        .widget-lib-scroll::-webkit-scrollbar { width: 4px; }
+        .widget-lib-scroll::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
 
-        .menu-section-label {
-            font-size: 0.75rem;
-            color: #666;
-            font-weight: 800;
-            margin: 25px 0 12px 10px;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-        }
+        /* Status Pills */
+        .pill { padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; }
+        .pill-live { background: rgba(52, 199, 89, 0.2); color: #34c759; border: 1px solid #34c759; }
 
-        .menu-row {
-            width: 100%;
-            padding: 18px 22px;
-            margin-bottom: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid transparent;
-            border-radius: 20px;
-            color: white;
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            transition: 0.2s;
-        }
-        .menu-row:hover { background: var(--accent); border-color: var(--accent); }
-        .menu-row.destructive { color: #ff3b30; }
-        .menu-row.destructive:hover { background: #ff3b30; color: white; }
-
-        /* Widget Library UI */
-        #available-widgets {
-            max-height: 250px;
-            overflow-y: auto;
-            padding-right: 5px;
-        }
+        #family-notes { flex: 1; background: transparent; border: none; color: white; padding: 25px; font-family: inherit; font-size: 1.1rem; outline: none; resize: none; line-height: 1.6; }
     </style>
 </head>
-<body class="mode-live">
+<body class="mode-view">
 
-    <div class="viewport-bg"></div>
+    <div class="os-container">
+        <nav class="sidebar">
+            <div class="nav-icon active" onclick="apex.switchTab('dash', this)"><i class="fa-solid fa-house"></i></div>
+            <div class="nav-icon" onclick="apex.switchTab('explore', this)"><i class="fa-solid fa-compass"></i></div>
+            <div class="nav-icon" onclick="apex.switchTab('media', this)"><i class="fa-solid fa-play"></i></div>
+            <div class="nav-icon" onclick="apex.switchTab('tasks', this)"><i class="fa-solid fa-list-check"></i></div>
+            <div style="margin-top: auto;" class="nav-icon" onclick="apex.toggleSettings()"><i class="fa-solid fa-sliders"></i></div>
+        </nav>
 
-    <button class="fab-trigger" onclick="titan.toggleMenu()">⚙️</button>
+        <main class="main-content" id="master-viewport">
+            
+            <div class="tab-view active" id="view-dash">
+                <div class="bento-grid" id="main-grid">
+                    
+                    <div class="tile tile-header" data-id="sys-header">
+                        <div class="header-profile">
+                            <img id="avatar-main" src="" alt="User">
+                            <div>
+                                <h3 style="font-weight: 800;">Khristian</h3>
+                                <span class="pill pill-live">M3 SYSTEM ONLINE</span>
+                            </div>
+                        </div>
+                        <div class="header-clock">
+                            <div id="clock-h">00:00</div>
+                            <div id="date-h">FRIDAY, 15 MAY</div>
+                        </div>
+                        <div style="display: flex; justify-content: flex-end;">
+                            <button class="btn-ios" style="padding: 12px 24px; background: rgba(255,255,255,0.08); border: 1px solid #333; color: white; border-radius: 14px; font-weight: 700; cursor: pointer;" onclick="location.href='https://khristiankorir0123-gif.github.io/login-screen/'">Logout</button>
+                        </div>
+                    </div>
 
-    <div id="titan-menu">
-        <h1 style="font-weight: 900; letter-spacing: -1px; margin-bottom: 5px;">Titan Control</h1>
-        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 30px;">Manage your M3 MacBook Workspace</p>
-        
-        <div class="menu-section-label">Organization</div>
-        <button class="menu-row" onclick="titan.enterEdit()">✏️ Arrange Grid Positions</button>
-        <button class="menu-row destructive" onclick="titan.factoryReset()">🔄 Reset to Factory Default</button>
-        
-        <div class="menu-section-label">Available Widgets</div>
-        <div id="available-widgets">
+                    <div class="tile" style="grid-column: span 2;" data-id="sys-one">
+                        <div class="del-btn" onclick="apex.removeTile(this)">−</div>
+                        <a href="https://onedrive.live.com" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; text-decoration:none; color:white; font-weight:800; font-size:1.1rem;">OneDrive</a>
+                    </div>
+                    <div class="tile" style="grid-column: span 2;" data-id="sys-two">
+                        <div class="del-btn" onclick="apex.removeTile(this)">−</div>
+                        <a href="https://vidbox.de" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; text-decoration:none; color:white; font-weight:800; font-size:1.1rem;">Vidbox</a>
+                    </div>
+
+                    <div class="tile" style="grid-column: span 4; grid-row: span 2;" data-id="sys-cal">
+                        <div class="del-btn" onclick="apex.removeTile(this)">−</div>
+                        <div style="padding: 25px 30px 5px; color: var(--accent); font-weight: 900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px;">Calendar</div>
+                        <iframe src="https://calendar.google.com/calendar/embed?src=en.dutch%23holiday%40group.v.calendar.google.com&ctz=Europe%2FAmsterdam"></iframe>
+                    </div>
+
+                    <div class="tile" style="grid-column: span 4; grid-row: span 2;" data-id="sys-notes">
+                        <div class="del-btn" onclick="apex.removeTile(this)">−</div>
+                        <div style="padding: 25px 30px 5px; color: var(--accent); font-weight: 900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; display: flex; justify-content: space-between;">Notes <div id="sync-dot" style="width: 8px; height: 8px; background: #34c759; border-radius: 50%; opacity: 0;"></div></div>
+                        <textarea id="family-notes" placeholder="Write to the cloud..."></textarea>
+                    </div>
+
+                    <div class="tile" style="grid-column: span 4; grid-row: span 2;" data-id="sys-scores">
+                        <div class="del-btn" onclick="apex.removeTile(this)">−</div>
+                        <div style="padding: 25px 30px 5px; color: var(--accent); font-weight: 900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px;">Football</div>
+                        <div style="flex:1; display:flex; align-items:center; justify-content:center; color:#333; font-weight:700;">No active matches</div>
+                    </div>
+                </div>
             </div>
 
-        <button class="menu-row" style="margin-top: 30px; background: #3a3a3c;" onclick="titan.toggleMenu()">Close Center</button>
-    </div>
-
-    <div class="bento-container is-live" id="main-grid">
-        
-        <div class="tile tile-header" data-id="wid-header">
-            <div class="btn-delete" onclick="titan.removeWidget(this)">−</div>
-            <div class="user-block">
-                <img id="avatar-frame" src="" alt="User">
-                <div style="font-weight: 800; font-size: 1.3rem;">Welcome back</div>
+            <div class="tab-view" id="view-explore">
+                <div class="explorer-frame">
+                    <div class="browser-toolbar">
+                        <div style="display: flex; gap: 8px;">
+                            <div style="width: 12px; height: 12px; background: #ff5f57; border-radius: 50%;"></div>
+                            <div style="width: 12px; height: 12px; background: #ffbd2e; border-radius: 50%;"></div>
+                            <div style="width: 12px; height: 12px; background: #28c840; border-radius: 50%;"></div>
+                        </div>
+                        <div class="address-bar">https://github.com/khristiankorir0123-gif</div>
+                    </div>
+                    <iframe src="https://bing.com" style="filter: none; pointer-events: auto;"></iframe>
+                </div>
             </div>
 
-            <div class="clock-block">
-                <div id="digital-time">00:00</div>
-                <div id="digital-date">...</div>
+            <div class="tab-view" id="view-media">
+                <div class="media-hub">
+                    <div class="media-card" style="background: url('https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop') center/cover;">
+                        <h1 style="font-size: 3rem; font-weight: 900; margin-bottom: 10px;">Music</h1>
+                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 20px;">Stream your production tracks.</p>
+                        <button class="btn-ios">Open Player</button>
+                    </div>
+                    <div class="media-card" style="background: url('https://images.unsplash.com/photo-1536240478700-b869070f9279?q=80&w=2070&auto=format&fit=crop') center/cover;">
+                        <h1 style="font-size: 3rem; font-weight: 900; margin-bottom: 10px;">Video</h1>
+                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 20px;">Review KO Productions shots.</p>
+                        <button class="btn-ios">KO Studio</button>
+                    </div>
+                </div>
             </div>
 
-            <div class="action-block">
-                <button class="btn-ios" onclick="location.href='https://khristiankorir0123-gif.github.io/login-screen/'">Switch</button>
-            </div>
-        </div>
+        </main>
 
-        <div class="tile" style="grid-column: span 2;" data-id="wid-onedrive">
-            <div class="btn-delete" onclick="titan.removeWidget(this)">−</div>
-            <a href="https://onedrive.live.com" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; text-decoration:none; color:white; font-weight:800; font-size:1.1rem;">OneDrive</a>
-        </div>
+        <aside class="settings-pane" id="settings-p">
+            <h1 style="font-size: 2.5rem; font-weight: 900; letter-spacing: -1px; margin-bottom: 10px;">Control Center</h1>
+            <p style="color: var(--text-dim); margin-bottom: 40px;">System Version 7.0 Alpha</p>
+            
+            <p style="font-size: 0.75rem; font-weight: 900; color: #555; margin-bottom: 15px; letter-spacing: 1px;">WORKSPACE</p>
+            <button class="menu-btn" onclick="apex.enterEdit()">✏️ Arrange Dashboard</button>
+            <button class="menu-btn" style="color: #ff3b30;" onclick="apex.reset()">🔄 Factory Reset</button>
 
-        <div class="tile" style="grid-column: span 2;" data-id="wid-vidbox">
-            <div class="btn-delete" onclick="titan.removeWidget(this)">−</div>
-            <a href="https://vidbox.de" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; text-decoration:none; color:white; font-weight:800; font-size:1.1rem;">Vidbox</a>
-        </div>
+            <p style="font-size: 0.75rem; font-weight: 900; color: #555; margin-top: 40px; margin-bottom: 15px; letter-spacing: 1px;">WIDGET LIBRARY</p>
+            <div class="widget-lib-scroll" id="lib-scroll">
+                </div>
 
-        <div class="tile" style="grid-column: span 4; grid-row: span 2;" data-id="wid-calendar">
-            <div class="btn-delete" onclick="titan.removeWidget(this)">−</div>
-            <div class="label-wrap">Shared Calendar</div>
-            <iframe src="https://calendar.google.com/calendar/embed?src=en.dutch%23holiday%40group.v.calendar.google.com&ctz=Europe%2FAmsterdam"></iframe>
-        </div>
-
-        <div class="tile" style="grid-column: span 4; grid-row: span 2;" data-id="wid-notes">
-            <div class="btn-delete" onclick="titan.removeWidget(this)">−</div>
-            <div class="label-wrap">Family Cloud Notes <div class="cloud-status" id="sync-indicator"></div></div>
-            <textarea id="family-textarea" placeholder="Start typing..."></textarea>
-        </div>
-
-        <div class="tile" style="grid-column: span 4; grid-row: span 2;" data-id="wid-football">
-            <div class="btn-delete" onclick="titan.removeWidget(this)">−</div>
-            <div class="label-wrap">Football Scores</div>
-            <div style="flex:1; display:flex; align-items:center; justify-content:center; color:#333; font-weight:700;">No matches in-play</div>
-        </div>
-
+            <button class="menu-btn" style="margin-top: 50px; justify-content: center; background: #333;" onclick="apex.toggleSettings()">Done</button>
+        </aside>
     </div>
 
     <script>
         /* ================================================================
-           TITAN K-OS CORE ENGINE
+           APEX HUB CORE ENGINE
            ================================================================
         */
 
         const PANTRY_ID = "94635661-89e8-466d-965a-0761e3893322";
-        const BASKET = "titan_notes_sync";
-        const gridElement = document.getElementById('main-grid');
-        const menuElement = document.getElementById('titan-menu');
+        const BASKET = "apex_v7_notes";
         
-        // MANIFEST: Defines what widgets look like so they can be re-created
-        const WIDGET_MANIFEST = {
-            "wid-header": { name: "System Header", col: "span 8", row: "span 1", html: `<div class="btn-delete" onclick="titan.removeWidget(this)">−</div><div class="user-block"><img id="avatar-frame" src="${localStorage.getItem('active_pic') || ''}" alt="User"><div style="font-weight: 800; font-size: 1.3rem;">Welcome back</div></div><div class="clock-block"><div id="digital-time">00:00</div><div id="digital-date">...</div></div><div class="action-block"><button class="btn-ios" onclick="location.href='https://khristiankorir0123-gif.github.io/login-screen/'">Switch</button></div>` },
-            "wid-onedrive": { name: "OneDrive App", col: "span 2", row: "span 1", html: `<div class="btn-delete" onclick="titan.removeWidget(this)">−</div><a href="https://onedrive.live.com" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; text-decoration:none; color:white; font-weight:800; font-size:1.1rem;">OneDrive</a>` },
-            "wid-vidbox": { name: "Vidbox App", col: "span 2", row: "span 1", html: `<div class="btn-delete" onclick="titan.removeWidget(this)">−</div><a href="https://vidbox.de" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; text-decoration:none; color:white; font-weight:800; font-size:1.1rem;">Vidbox</a>` },
-            "wid-calendar": { name: "Google Calendar", col: "span 4", row: "span 2", html: `<div class="btn-delete" onclick="titan.removeWidget(this)">−</div><div class="label-wrap">Shared Calendar</div><iframe src="https://calendar.google.com/calendar/embed?src=en.dutch%23holiday%40group.v.calendar.google.com&ctz=Europe%2FAmsterdam"></iframe>` },
-            "wid-notes": { name: "Family Cloud Notes", col: "span 4", row: "span 2", html: `<div class="btn-delete" onclick="titan.removeWidget(this)">−</div><div class="label-wrap">Family Cloud Notes <div class="cloud-status" id="sync-indicator"></div></div><textarea id="family-textarea" placeholder="Start typing..."></textarea>` },
-            "wid-football": { name: "Football Scores", col: "span 4", row: "span 2", html: `<div class="btn-delete" onclick="titan.removeWidget(this)">−</div><div class="label-wrap">Football Scores</div><div style="flex:1; display:flex; align-items:center; justify-content:center; color:#333; font-weight:700;">No matches in-play</div>` }
+        // MANIFEST: The source of truth for all possible widgets
+        const MANIFEST = {
+            "sys-header": { name: "System Header", col: "span 12", row: "span 1", html: `<div class="header-profile"><img id="avatar-main" src="${localStorage.getItem('active_pic') || ''}" alt="User"><div><h3 style="font-weight: 800;">Khristian</h3><span class="pill pill-live">M3 SYSTEM ONLINE</span></div></div><div class="header-clock"><div id="clock-h">00:00</div><div id="date-h">FRIDAY, 15 MAY</div></div><div style="display: flex; justify-content: flex-end;"><button class="btn-ios" onclick="location.href='https://khristiankorir0123-gif.github.io/login-screen/'">Logout</button></div>` },
+            "sys-one": { name: "OneDrive App", col: "span 2", row: "span 1", html: `<div class="del-btn" onclick="apex.removeTile(this)">−</div><a href="https://onedrive.live.com" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; text-decoration:none; color:white; font-weight:800; font-size:1.1rem;">OneDrive</a>` },
+            "sys-two": { name: "Vidbox App", col: "span 2", row: "span 1", html: `<div class="del-btn" onclick="apex.removeTile(this)">−</div><a href="https://vidbox.de" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; text-decoration:none; color:white; font-weight:800; font-size:1.1rem;">Vidbox</a>` },
+            "sys-cal": { name: "Google Calendar", col: "span 4", row: "span 2", html: `<div class="del-btn" onclick="apex.removeTile(this)">−</div><div style="padding: 25px 30px 5px; color: var(--accent); font-weight: 900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px;">Calendar</div><iframe src="https://calendar.google.com/calendar/embed?src=en.dutch%23holiday%40group.v.calendar.google.com&ctz=Europe%2FAmsterdam"></iframe>` },
+            "sys-notes": { name: "Cloud Notes", col: "span 4", row: "span 2", html: `<div class="del-btn" onclick="apex.removeTile(this)">−</div><div style="padding: 25px 30px 5px; color: var(--accent); font-weight: 900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; display: flex; justify-content: space-between;">Notes <div id="sync-dot" style="width: 8px; height: 8px; background: #34c759; border-radius: 50%; opacity: 0;"></div></div><textarea id="family-notes" placeholder="Write to the cloud..."></textarea>` },
+            "sys-scores": { name: "Football Scores", col: "span 4", row: "span 2", html: `<div class="del-btn" onclick="apex.removeTile(this)">−</div><div style="padding: 25px 30px 5px; color: var(--accent); font-weight: 900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px;">Football</div><div style="flex:1; display:flex; align-items:center; justify-content:center; color:#333; font-weight:700;">No active matches</div>` }
         };
 
-        const titan = {
+        const apex = {
             sortable: null,
             syncTimer: null,
 
-            toggleMenu: () => {
-                titan.refreshLibrary();
-                menuElement.classList.toggle('active');
+            toggleSettings: () => {
+                apex.refreshLibrary();
+                document.getElementById('settings-p').classList.toggle('open');
+            },
+
+            switchTab: (tabId, el) => {
+                // UI Toggle
+                document.querySelectorAll('.nav-icon').forEach(i => i.classList.remove('active'));
+                el.classList.add('active');
+                
+                // View Toggle
+                document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+                document.getElementById('view-' + tabId).classList.add('active');
             },
 
             // --- LIBRARY LOGIC ---
-            // Scans the screen and sees what's missing compared to the Manifest
             refreshLibrary: () => {
-                const libraryDiv = document.getElementById('available-widgets');
-                libraryDiv.innerHTML = "";
-                
-                Object.keys(WIDGET_MANIFEST).forEach(id => {
+                const lib = document.getElementById('lib-scroll');
+                lib.innerHTML = "";
+                Object.keys(MANIFEST).forEach(id => {
                     const exists = document.querySelector(`[data-id="${id}"]`);
                     if (!exists) {
                         const btn = document.createElement('button');
-                        btn.className = "menu-row";
-                        btn.innerHTML = `➕ Add ${WIDGET_MANIFEST[id].name}`;
-                        btn.onclick = () => titan.addWidget(id);
-                        libraryDiv.appendChild(btn);
+                        btn.className = "menu-btn";
+                        btn.innerHTML = `➕ Add ${MANIFEST[id].name}`;
+                        btn.onclick = () => apex.addTile(id);
+                        lib.appendChild(btn);
                     }
                 });
-
-                if(libraryDiv.innerHTML === "") {
-                    libraryDiv.innerHTML = "<p style='color:#444; padding:10px;'>All widgets are active.</p>";
-                }
+                if(lib.innerHTML === "") lib.innerHTML = "<p style='color:#333; font-size:0.8rem;'>All widgets active.</p>";
             },
 
-            addWidget: (id) => {
-                const data = WIDGET_MANIFEST[id];
+            addTile: (id) => {
+                const data = MANIFEST[id];
                 const tile = document.createElement('div');
                 tile.className = "tile";
                 tile.style.gridColumn = data.col;
                 tile.style.gridRow = data.row;
                 tile.setAttribute('data-id', id);
                 tile.innerHTML = data.html;
-                
-                gridElement.appendChild(tile);
-                titan.saveLayout();
-                titan.refreshLibrary();
-                
-                // Re-init special logic if it's notes
-                if(id === "wid-notes") titan.initNotes();
+                document.getElementById('main-grid').appendChild(tile);
+                apex.saveLayout();
+                apex.refreshLibrary();
+                if(id === 'sys-notes') apex.initNotes();
             },
 
-            removeWidget: (btn) => {
+            removeTile: (btn) => {
                 btn.closest('.tile').remove();
-                titan.saveLayout();
+                apex.saveLayout();
+            },
+
+            // --- PERSISTENCE ---
+            saveLayout: () => {
+                const order = Array.from(document.getElementById('main-grid').children).map(t => t.getAttribute('data-id'));
+                localStorage.setItem('apex-v7-layout', JSON.stringify(order));
+            },
+
+            restore: () => {
+                const saved = JSON.parse(localStorage.getItem('apex-v7-layout'));
+                if (saved) {
+                    const grid = document.getElementById('main-grid');
+                    const existing = Array.from(grid.children);
+                    saved.forEach(id => {
+                        const target = existing.find(t => t.getAttribute('data-id') === id);
+                        if (target) grid.appendChild(target);
+                    });
+                }
+            },
+
+            // --- EDITING UX ---
+            enterEdit: () => {
+                document.body.className = "mode-edit";
+                apex.sortable = Sortable.create(document.getElementById('main-grid'), {
+                    animation: 300, onEnd: apex.saveLayout
+                });
+                apex.toggleSettings();
+            },
+
+            exitEdit: () => {
+                document.body.className = "mode-view";
+                if(apex.sortable) { apex.saveLayout(); apex.sortable.destroy(); }
             },
 
             // --- CLOUD SYNC ---
             initNotes: () => {
-                const area = document.getElementById('family-textarea');
+                const area = document.getElementById('family-notes');
                 if(!area) return;
-                
                 area.addEventListener('input', () => {
-                    clearTimeout(titan.syncTimer);
-                    titan.syncTimer = setTimeout(titan.pushNotes, 1500);
+                    clearTimeout(apex.syncTimer);
+                    apex.syncTimer = setTimeout(apex.pushNotes, 2000);
                 });
-                
-                titan.pullNotes();
-                setInterval(titan.pullNotes, 12000);
+                apex.pullNotes();
+                setInterval(apex.pullNotes, 15000);
             },
 
             pullNotes: async () => {
-                const area = document.getElementById('family-textarea');
-                const dot = document.getElementById('sync-indicator');
+                const area = document.getElementById('family-notes');
+                const dot = document.getElementById('sync-dot');
                 if(!area) return;
                 try {
                     const res = await fetch(`https://getpantry.cloud/apiv1/pantry/${PANTRY_ID}/basket/${BASKET}`);
@@ -456,110 +515,36 @@
             },
 
             pushNotes: async () => {
-                const area = document.getElementById('family-textarea');
-                const dot = document.getElementById('sync-indicator');
-                if(dot) dot.style.background = "#ff9500";
+                const area = document.getElementById('family-notes');
                 try {
                     await fetch(`https://getpantry.cloud/apiv1/pantry/${PANTRY_ID}/basket/${BASKET}`, {
                         method: 'POST', headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({ text: area.value })
                     });
-                    if(dot) dot.style.background = "#34c759";
                 } catch(e){}
             },
 
-            // --- LAYOUT PERSISTENCE ---
-            saveLayout: () => {
-                const order = Array.from(gridElement.children).map(t => t.getAttribute('data-id'));
-                localStorage.setItem('titan-layout-v6', JSON.stringify(order));
-            },
-
-            restoreLayout: () => {
-                const saved = JSON.parse(localStorage.getItem('titan-layout-v6'));
-                if (saved) {
-                    // First, clear current (except what was saved)
-                    const currentTiles = Array.from(gridElement.children);
-                    
-                    // Add saved tiles back in order
-                    saved.forEach(id => {
-                        const target = currentTiles.find(t => t.getAttribute('data-id') === id);
-                        if (target) {
-                            gridElement.appendChild(target);
-                        } else if(WIDGET_MANIFEST[id]) {
-                            // If it's in the manifest but was deleted before save, don't auto-add
-                            // but if it's missing from screen but IN the save, re-create it.
-                            titan.addWidget(id);
-                        }
-                    });
-
-                    // Remove anything not in the save
-                    currentTiles.forEach(t => {
-                        if(!saved.includes(t.getAttribute('data-id'))) t.remove();
-                    });
-                }
-            },
-
-            enterEdit: () => {
-                document.body.className = "mode-edit";
-                gridElement.classList.remove('is-live');
-                titan.sortable = Sortable.create(gridElement, { 
-                    animation: 400, 
-                    easing: "cubic-bezier(0.2, 0, 0, 1)",
-                    onEnd: titan.saveLayout 
-                });
-                titan.toggleMenu();
-            },
-
-            exitEdit: () => {
-                document.body.className = "mode-live";
-                gridElement.classList.add('is-live');
-                if(titan.sortable) {
-                    titan.saveLayout();
-                    titan.sortable.destroy();
-                }
-            },
-
-            factoryReset: () => {
-                localStorage.clear();
-                location.reload();
-            }
+            reset: () => { localStorage.clear(); location.reload(); }
         };
 
-        // --- CLOCK & INITIALIZATION ---
+        // --- CLOCK & BOOT ---
         function runClock() {
-            const tick = () => {
+            setInterval(() => {
                 const now = new Date();
-                const timeEl = document.getElementById('digital-time');
-                const dateEl = document.getElementById('digital-date');
-                if(timeEl) timeEl.textContent = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-                if(dateEl) dateEl.textContent = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
-            };
-            setInterval(tick, 1000); tick();
+                document.getElementById('clock-h').textContent = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('date-h').textContent = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+            }, 1000);
         }
 
         window.onload = () => {
             runClock();
-            
-            // Set Avatar
-            const avatar = document.getElementById('avatar-frame');
-            if(avatar) avatar.src = localStorage.getItem('active_pic') || '';
+            document.getElementById('avatar-main').src = localStorage.getItem('active_pic') || '';
+            apex.restore();
+            apex.initNotes();
 
-            // Grid Boot
-            titan.restoreLayout();
-            titan.initNotes();
-
-            // Interaction Listeners
-            let longPress;
-            document.addEventListener('mousedown', () => {
-                if(document.body.className === "mode-edit") return;
-                longPress = setTimeout(titan.enterEdit, 900);
-            });
-            document.addEventListener('mouseup', () => clearTimeout(longPress));
-
-            document.addEventListener('click', (e) => {
-                if(e.target === gridElement && document.body.className === "mode-edit") {
-                    titan.exitEdit();
-                }
+            // Background exit
+            document.getElementById('master-viewport').addEventListener('click', (e) => {
+                if(e.target.id === 'main-grid' && document.body.className === "mode-edit") apex.exitEdit();
             });
         };
     </script>
