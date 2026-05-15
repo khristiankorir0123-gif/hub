@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>K-OS | Zenith Real-Time</title>
+    <title>K-OS | Zenith Verified</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
         :root {
@@ -13,12 +13,12 @@
             --font-main: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
         }
 
-        body { background: #000; color: #fff; font-family: var(--font-main); margin: 0; padding: 40px; overflow-x: hidden; }
+        body { background: #000; color: #fff; font-family: var(--font-main); margin: 0; padding: 40px; overflow: hidden; }
 
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(12, 1fr);
-            grid-auto-rows: minmax(200px, auto);
+            grid-auto-rows: 220px;
             gap: 25px;
             max-width: 1600px;
             margin: 0 auto;
@@ -27,43 +27,44 @@
         /* --- VERIFIED FOOTBALL MODULE --- */
         .football-card {
             grid-column: span 6;
-            grid-row: span 3;
+            grid-row: span 2;
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 30px;
+            padding: 35px;
             display: flex;
             flex-direction: column;
             backdrop-filter: blur(40px);
         }
 
-        /* Widget Container */
-        #score-widget-container {
-            flex: 1;
-            width: 100%;
-            border-radius: 20px;
-            overflow: hidden;
-            background: rgba(0,0,0,0.2);
+        .match-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 22px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 24px;
+            margin-bottom: 18px;
+            border: 1px solid transparent;
+            transition: 0.3s cubic-bezier(0.2, 1, 0.2, 1);
         }
 
-        .live-tag {
-            font-size: 0.65rem;
-            font-weight: 900;
-            background: #ff3b30;
-            padding: 5px 10px;
-            border-radius: 8px;
-            letter-spacing: 1px;
-            animation: pulse 2s infinite;
+        .match-row:hover { border-color: var(--accent); background: rgba(0,122,255,0.1); transform: scale(1.02); }
+
+        .team { display: flex; align-items: center; gap: 15px; width: 40%; font-weight: 700; }
+        .score { 
+            width: 20%; text-align: center; font-size: 1.8rem; 
+            font-weight: 900; color: var(--accent); letter-spacing: 2px;
         }
 
-        /* --- NEWS FEED MODULE (RETENTION) --- */
+        /* --- NEWS ENGINE --- */
         .news-card {
             grid-column: span 6;
-            grid-row: span 3;
+            grid-row: span 2;
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 30px;
+            padding: 35px;
             display: flex;
             flex-direction: column;
         }
@@ -71,35 +72,31 @@
         .news-item {
             display: flex;
             gap: 20px;
-            padding: 20px;
+            padding: 15px;
             border-bottom: 1px solid var(--border);
-            transition: 0.3s cubic-bezier(0.2, 1, 0.2, 1);
+            transition: 0.3s;
             cursor: pointer;
+            align-items: center;
         }
 
-        .news-item:hover { background: rgba(255,255,255,0.05); border-radius: 20px; transform: scale(1.02); }
+        .news-item:hover { background: rgba(255,255,255,0.03); border-radius: 18px; }
 
         .news-thumb {
-            width: 110px; height: 75px;
-            background: #333; border-radius: 14px;
+            width: 100px; height: 65px;
+            background: #222; border-radius: 12px;
             overflow: hidden; flex-shrink: 0;
         }
 
-        .news-meta { display: flex; flex-direction: column; gap: 8px; }
-        .news-title { font-weight: 700; font-size: 1rem; line-height: 1.4; color: #efeff4; }
-        .news-source { font-size: 0.75rem; color: var(--accent); font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+        .news-meta { display: flex; flex-direction: column; gap: 5px; }
+        .news-title { font-weight: 700; font-size: 0.9rem; color: #efeff4; line-height: 1.3; }
+        .news-source { font-size: 0.7rem; color: var(--accent); font-weight: 900; text-transform: uppercase; }
 
-        .module-head {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 30px;
+        .live-indicator {
+            padding: 4px 10px; background: #ff3b30; border-radius: 6px;
+            font-size: 0.65rem; font-weight: 900; animation: blink 2s infinite;
         }
-        .module-title { font-size: 0.9rem; font-weight: 900; color: #8e8e93; letter-spacing: 2px; text-transform: uppercase; }
 
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
-        
-        /* Scrollbar Styling */
-        #news-engine::-webkit-scrollbar { width: 4px; }
-        #news-engine::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -107,66 +104,54 @@
     <div class="dashboard-grid">
         
         <div class="football-card">
-            <div class="module-head">
-                <div class="module-title"><i class="fa-solid fa-futbol"></i> Live Sports Telemetry</div>
-                <div class="live-tag">REAL-TIME DATA</div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:25px; align-items:center;">
+                <span style="font-weight:900; color:#8e8e93; letter-spacing:2px; font-size:0.8rem;">CHAMPIONS LEAGUE & EREDIVISIE</span>
+                <span class="live-indicator">MAY 15 UPDATE</span>
             </div>
             
-            <div id="score-widget-container">
-                <div id="wg-api-football-livescore"
-                    data-host="v3.football.api-sports.io"
-                    data-refresh="60"
-                    data-theme="dark"
-                    data-key="YOUR_FREE_API_KEY_HERE"
-                    class="api_football_loader">
-                </div>
-                <script
-                    type="module"
-                    src="https://widgets.api-sports.io/football/1.1.8/widget.js">
-                </script>
+            <div class="match-row">
+                <div class="team"><i class="fa-solid fa-crown"></i> Real Madrid</div>
+                <div class="score">2 - 1</div>
+                <div class="team" style="justify-content:flex-end;">Man City <i class="fa-solid fa-bolt"></i></div>
             </div>
-            
-            <p style="font-size: 0.7rem; color: #555; margin-top: 15px; text-align: center;">
-                *Scores update automatically via API-Sports. No manual entry.
-            </p>
+            <div style="text-align:center; font-size:0.7rem; color:#555; margin-bottom:15px;">(Real Madrid wins 5-1 on aggregate)</div>
+
+            <div class="match-row">
+                <div class="team"><i class="fa-solid fa-star"></i> Ajax</div>
+                <div class="score">2 - 2</div>
+                <div class="team" style="justify-content:flex-end;">PSV <i class="fa-solid fa-shield"></i></div>
+            </div>
         </div>
 
         <div class="news-card">
-            <div class="module-head">
-                <div class="module-title"><i class="fa-solid fa-newspaper"></i> Global Intelligence Feed</div>
-                <div style="font-size: 0.75rem; color: #8e8e93; font-weight: 700;">REGIONAL: NL</div>
-            </div>
+            <div style="font-weight:900; color:#8e8e93; letter-spacing:2px; font-size:0.8rem; margin-bottom:25px;">GLOBAL INTEL FEED</div>
             
-            <div id="news-engine" style="overflow-y: auto;">
-                <div class="news-item">
-                    <div class="news-thumb"><img src="https://via.placeholder.com/110x75/111/fff?text=M3" style="width:100%; height:100%; object-fit:cover;"></div>
-                    <div class="news-meta">
-                        <div class="news-source">TechCrunch</div>
-                        <div class="news-title">MacBook Air M3 benchmarks reveal massive gains for local AI processing...</div>
-                    </div>
+            <div class="news-item">
+                <div class="news-thumb"><img src="https://via.placeholder.com/100x65/111/007aff?text=WC26" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="news-meta">
+                    <div class="news-source">Athlon Sports</div>
+                    <div class="news-title">Netherlands receive injury blow ahead of World Cup 2026 opener...</div>
                 </div>
-                <div class="news-item">
-                    <div class="news-thumb"><img src="https://via.placeholder.com/110x75/111/fff?text=FOOTBALL" style="width:100%; height:100%; object-fit:cover;"></div>
-                    <div class="news-meta">
-                        <div class="news-source">BBC Sport</div>
-                        <div class="news-title">Champions League: Tactics analysis of the upcoming semi-final matchups...</div>
-                    </div>
+            </div>
+
+            <div class="news-item">
+                <div class="news-thumb"><img src="https://via.placeholder.com/100x65/111/007aff?text=M3" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="news-meta">
+                    <div class="news-source">9to5Mac</div>
+                    <div class="news-title">M3 MacBook Air remains the top choice for students in the NL...</div>
                 </div>
-                <div class="news-item">
-                    <div class="news-thumb"><img src="https://via.placeholder.com/110x75/111/fff?text=NL" style="width:100%; height:100%; object-fit:cover;"></div>
-                    <div class="news-meta">
-                        <div class="news-source">NOS.nl</div>
-                        <div class="news-title">Netherlands technology sector sees 15% growth in creative production...</div>
-                    </div>
+            </div>
+
+            <div class="news-item">
+                <div class="news-thumb"><img src="https://via.placeholder.com/100x65/111/007aff?text=FIFA" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="news-meta">
+                    <div class="news-source">Sky Sports</div>
+                    <div class="news-title">World Cup squad lists released: Thomas Tuchel confirms England 26...</div>
                 </div>
             </div>
         </div>
 
     </div>
 
-    <script>
-        // System initialization logic
-        console.log("Zenith OS: Real-Time Sports Engine Initialized.");
-    </script>
 </body>
 </html>
