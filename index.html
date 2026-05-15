@@ -3,528 +3,565 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>K-OS | Family Hub Elite</title>
+    <title>K-OS | Titan Command Center</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     
     <style>
-        /* --- THE DESIGN SYSTEM ---
-           Inspired by macOS Ventura and iOS 17.
-           Optimized for the M3 MacBook Air Liquid Retina Display.
+        /* ================================================================
+           TITAN DESIGN SYSTEM (macOS / iOS Hybrid)
+           Optimized for M3 MacBook Air (2560x1664)
+           ================================================================
         */
         :root {
             --accent: #007aff;
-            --accent-glow: rgba(0, 122, 255, 0.5);
+            --accent-gradient: linear-gradient(135deg, #007aff, #00c6ff);
             --bg-color: #000000;
-            --card-bg: rgba(28, 28, 30, 0.75);
+            --card-bg: rgba(28, 28, 30, 0.7);
             --card-border: rgba(255, 255, 255, 0.1);
-            --text-primary: #ffffff;
-            --text-secondary: #8e8e93;
-            --radius-large: 32px;
-            --radius-small: 16px;
-            --glass-blur: blur(25px) saturate(180%);
-            --transition: cubic-bezier(0.4, 0, 0.2, 1);
+            --text-main: #ffffff;
+            --text-muted: #8e8e93;
+            --radius-xl: 34px;
+            --radius-md: 18px;
+            --glass: blur(40px) saturate(200%);
+            --shadow-hub: 0 20px 50px rgba(0,0,0,0.5);
         }
 
-        /* --- CORE RESET --- */
+        /* --- GLOBAL RESET --- */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+            cursor: default;
         }
 
         body, html {
             width: 100%;
             height: 100vh;
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+            background: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
             user-select: none;
         }
 
-        /* --- DYNAMIC BACKGROUND --- */
-        .wallpaper-engine {
+        /* --- AMBIENT DEPTH --- */
+        .viewport-bg {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at 50% 50%, #1c1c1e 0%, #000000 100%);
+            background: 
+                radial-gradient(circle at 10% 10%, #1a1a1a 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, #0a0a0a 0%, transparent 40%);
             z-index: -1;
         }
 
-        /* --- THE BENTO GRID --- */
-        .bento-grid {
+        /* --- THE BENTO GRID ARCHITECTURE --- */
+        .bento-container {
             display: grid;
             grid-template-columns: repeat(12, 1fr);
-            grid-template-rows: 180px repeat(auto-fill, minmax(180px, 1fr));
+            grid-auto-rows: 175px;
             gap: 25px;
             padding: 35px;
-            width: 100%;
-            height: 100%;
-            max-width: 1920px;
+            max-width: 2000px;
             margin: 0 auto;
+            height: 100vh;
             align-content: start;
+            overflow-y: auto;
+            scrollbar-width: none; /* Hide scrollbar for clean look */
         }
+        .bento-container::-webkit-scrollbar { display: none; }
 
+        /* --- UNIVERSAL TILE STYLING --- */
         .tile {
             background: var(--card-bg);
-            backdrop-filter: var(--glass-blur);
-            -webkit-backdrop-filter: var(--glass-blur);
+            backdrop-filter: var(--glass);
+            -webkit-backdrop-filter: var(--glass);
             border: 1px solid var(--card-border);
-            border-radius: var(--radius-large);
+            border-radius: var(--radius-xl);
             display: flex;
             flex-direction: column;
             position: relative;
             overflow: hidden;
-            transition: transform 0.4s var(--transition), box-shadow 0.4s var(--transition), border 0.4s var(--transition);
+            transition: 
+                transform 0.4s cubic-bezier(0.2, 0, 0, 1),
+                box-shadow 0.4s ease,
+                border 0.4s ease;
         }
 
-        /* --- PROFILE & CLOCK (BALANCED ALIGNMENT) --- */
-        .profile-hero {
+        .tile:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* --- HEADER SECTION (CLOCK FIX) --- */
+        .tile-header {
             grid-column: span 8;
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr; /* Rigid centering logic */
             align-items: center;
-            justify-content: space-between;
-            padding: 0 45px;
+            padding: 0 50px;
         }
 
-        .avatar-wrap {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        #user-avatar {
-            width: 80px;
-            height: 80px;
+        .user-block { display: flex; align-items: center; gap: 20px; }
+        
+        #avatar-frame {
+            width: 85px; height: 85px;
             border-radius: 50%;
             border: 3px solid var(--accent);
             object-fit: cover;
-            box-shadow: 0 0 20px var(--accent-glow);
+            box-shadow: 0 0 25px var(--accent-glow);
         }
 
-        .time-center {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
+        .clock-block {
             text-align: center;
             pointer-events: none;
         }
 
-        #clock-digital {
-            font-size: 4.2rem;
+        #digital-time {
+            font-size: 4.5rem;
             font-weight: 800;
-            letter-spacing: -3px;
+            letter-spacing: -4px;
             line-height: 1;
+            margin-bottom: 2px;
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.2));
         }
 
-        #date-display {
-            color: var(--text-secondary);
+        #digital-date {
+            color: var(--text-muted);
             font-size: 1.1rem;
-            font-weight: 500;
-            margin-top: 4px;
-        }
-
-        .switch-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid var(--card-border);
-            color: white;
-            padding: 14px 24px;
-            border-radius: 18px;
             font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            z-index: 10;
-        }
-        .switch-btn:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-2px); }
-
-        /* --- EDITING UX --- */
-        @keyframes wiggle {
-            0% { transform: rotate(-0.7deg); }
-            50% { transform: rotate(0.7deg); }
-            100% { transform: rotate(-0.7deg); }
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .mode-editing .tile {
-            animation: wiggle 0.3s infinite ease-in-out;
-            cursor: grab;
-            border-color: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
+        .action-block { display: flex; justify-content: flex-end; }
 
-        .delete-trigger {
-            position: absolute;
-            top: 12px; left: 12px;
-            width: 28px; height: 28px;
-            background: #ff3b30;
-            border-radius: 50%;
-            border: 2px solid white;
+        .btn-ios {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: white;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
+            padding: 14px 28px;
+            border-radius: 20px;
+            font-weight: 700;
             cursor: pointer;
-            z-index: 100;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .mode-editing .delete-trigger { display: flex; }
+        .btn-ios:hover { background: var(--accent); transform: scale(1.05); }
 
-        /* --- WIDGET HEADERS --- */
-        .widget-label {
-            padding: 24px 30px 10px;
+        /* --- WIDGET CONTENT --- */
+        .label-wrap {
+            padding: 25px 30px 10px;
             font-size: 0.75rem;
-            font-weight: 800;
+            font-weight: 900;
             color: var(--accent);
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 2px;
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
         }
 
-        .sync-blob {
-            width: 8px; height: 8px;
-            background: #34c759;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #34c759;
-            opacity: 0;
+        .cloud-status {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: #34c759; box-shadow: 0 0 8px #34c759;
             transition: 0.3s;
         }
 
-        /* --- CONTENT AREAS --- */
         iframe {
             width: 100%; height: 100%;
             border: none;
-            filter: invert(0.92) hue-rotate(180deg) brightness(0.95);
-            pointer-events: none; /* Block interactions in grid view */
+            filter: invert(0.95) hue-rotate(180deg) brightness(0.9);
+            pointer-events: none;
         }
-        .mode-normal iframe { pointer-events: auto; }
+        .is-live iframe { pointer-events: auto; }
 
-        #cloud-notes-area {
+        #family-textarea {
             flex: 1;
             background: transparent;
             border: none;
-            color: #efeff4;
+            color: #fff;
             padding: 5px 30px 30px;
             font-family: inherit;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             line-height: 1.6;
             resize: none;
             outline: none;
         }
 
-        /* --- SETTINGS MENU --- */
-        #master-settings {
-            position: fixed;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%) scale(0.8);
-            width: 380px;
-            background: #1c1c1e;
+        /* --- EDITING ENGINE --- */
+        @keyframes jiggle {
+            0% { transform: rotate(-0.5deg); }
+            50% { transform: rotate(0.5deg); }
+            100% { transform: rotate(-0.5deg); }
+        }
+
+        .mode-edit .tile {
+            animation: jiggle 0.3s infinite ease-in-out;
+            border-color: rgba(255,255,255,0.4);
+            cursor: grab;
+        }
+
+        .btn-delete {
+            position: absolute;
+            top: 15px; left: 15px;
+            width: 30px; height: 30px;
+            background: #ff3b30;
+            color: white;
+            border-radius: 50%;
+            border: 2px solid white;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            cursor: pointer;
+            z-index: 500;
+            box-shadow: 0 5px 15px rgba(255,59,48,0.4);
+        }
+        .mode-edit .btn-delete { display: flex; }
+
+        /* --- CONTROL CENTER MODAL --- */
+        .fab-trigger {
+            position: fixed; bottom: 40px; right: 40px;
+            width: 65px; height: 65px;
+            background: var(--accent-gradient);
+            border-radius: 50%; border: none;
+            color: white; font-size: 1.8rem;
+            cursor: pointer; z-index: 2000;
+            box-shadow: 0 15px 35px rgba(0, 122, 255, 0.4);
+            transition: 0.4s;
+        }
+        .fab-trigger:hover { transform: scale(1.1) rotate(90deg); }
+
+        #titan-menu {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            width: 440px;
+            background: rgba(28, 28, 30, 0.95);
+            backdrop-filter: blur(50px);
             border: 1px solid #333;
-            border-radius: 32px;
-            padding: 35px;
+            border-radius: 40px;
+            padding: 45px;
             z-index: 3000;
             display: none;
             opacity: 0;
-            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 30px 80px rgba(0,0,0,0.9);
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        #master-settings.visible { display: block; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        #titan-menu.active { display: block; opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
-        .option-row {
+        .menu-section-label {
+            font-size: 0.75rem;
+            color: #666;
+            font-weight: 800;
+            margin: 25px 0 12px 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .menu-row {
             width: 100%;
-            padding: 16px;
+            padding: 18px 22px;
             margin-bottom: 12px;
-            background: #2c2c2e;
-            border: none;
-            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid transparent;
+            border-radius: 20px;
             color: white;
-            text-align: left;
-            font-weight: 600;
+            font-weight: 700;
+            font-size: 1rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 15px;
+            transition: 0.2s;
         }
-        .option-row:hover { background: var(--accent); }
+        .menu-row:hover { background: var(--accent); border-color: var(--accent); }
+        .menu-row.destructive { color: #ff3b30; }
+        .menu-row.destructive:hover { background: #ff3b30; color: white; }
 
-        /* --- FAB --- */
-        .action-fab {
-            position: fixed;
-            bottom: 40px; right: 40px;
-            width: 60px; height: 60px;
-            background: var(--accent-gradient, var(--accent));
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer;
-            z-index: 2500;
-            box-shadow: 0 10px 25px rgba(0,122,255,0.4);
-            border: none; color: white; font-size: 1.5rem;
-            transition: 0.3s;
-        }
-        .action-fab:hover { transform: scale(1.1) rotate(15deg); }
-
-        /* --- RESPONSIVE --- */
-        @media (max-width: 1100px) {
-            body { overflow-y: auto; }
-            .bento-grid { display: flex; flex-direction: column; height: auto; }
-            .tile { min-height: 300px; }
-            .profile-hero { flex-direction: column; padding: 40px; gap: 25px; }
-            .time-center { position: static; transform: none; }
+        /* Widget Library UI */
+        #available-widgets {
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 5px;
         }
     </style>
 </head>
-<body class="mode-normal">
+<body class="mode-live">
 
-    <div class="wallpaper-engine"></div>
+    <div class="viewport-bg"></div>
 
-    <button class="action-fab" onclick="ui.toggleMenu()">⚙️</button>
+    <button class="fab-trigger" onclick="titan.toggleMenu()">⚙️</button>
 
-    <div id="master-settings">
-        <h2 style="margin-bottom: 25px; font-weight: 800;">Control Center</h2>
-        <button class="option-row" onclick="layout.initEdit()">✏️ Customize Layout</button>
-        <button class="option-row" onclick="layout.reset()">🔄 Factory Reset Grid</button>
-        <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
-        <p style="font-size: 0.8rem; color: #666; margin-bottom: 10px;">ADD NEW WIDGET</p>
-        <button class="option-row" onclick="widgets.create('iframe')">🌐 Website Frame</button>
-        <button class="option-row" onclick="widgets.create('text')">📝 Shared Text Block</button>
-        <button class="option-row" onclick="widgets.create('image')">🖼️ Visual Gallery</button>
-        <button class="option-row" style="background: #3a3a3c; margin-top: 15px;" onclick="ui.toggleMenu()">Done</button>
+    <div id="titan-menu">
+        <h1 style="font-weight: 900; letter-spacing: -1px; margin-bottom: 5px;">Titan Control</h1>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 30px;">Manage your M3 MacBook Workspace</p>
+        
+        <div class="menu-section-label">Organization</div>
+        <button class="menu-row" onclick="titan.enterEdit()">✏️ Arrange Grid Positions</button>
+        <button class="menu-row destructive" onclick="titan.factoryReset()">🔄 Reset to Factory Default</button>
+        
+        <div class="menu-section-label">Available Widgets</div>
+        <div id="available-widgets">
+            </div>
+
+        <button class="menu-row" style="margin-top: 30px; background: #3a3a3c;" onclick="titan.toggleMenu()">Close Center</button>
     </div>
 
-    <div class="bento-grid" id="master-grid">
+    <div class="bento-container is-live" id="main-grid">
         
-        <div class="tile profile-hero" data-id="tile-profile">
-            <div class="delete-trigger" onclick="widgets.remove(this)">−</div>
-            <div class="avatar-wrap">
-                <img id="user-avatar" src="" alt="Avatar">
-                <span id="greeting" style="font-size: 1.2rem; font-weight: 600;">Welcome back</span>
-            </div>
-            
-            <div class="time-center">
-                <div id="clock-digital">00:00</div>
-                <div id="date-display">...</div>
+        <div class="tile tile-header" data-id="wid-header">
+            <div class="btn-delete" onclick="titan.removeWidget(this)">−</div>
+            <div class="user-block">
+                <img id="avatar-frame" src="" alt="User">
+                <div style="font-weight: 800; font-size: 1.3rem;">Welcome back</div>
             </div>
 
-            <button class="switch-btn" onclick="location.href='https://khristiankorir0123-gif.github.io/login-screen/'">
-                Switch Profile
-            </button>
+            <div class="clock-block">
+                <div id="digital-time">00:00</div>
+                <div id="digital-date">...</div>
+            </div>
+
+            <div class="action-block">
+                <button class="btn-ios" onclick="location.href='https://khristiankorir0123-gif.github.io/login-screen/'">Switch</button>
+            </div>
         </div>
 
-        <div class="tile" style="grid-column: span 2;" data-id="tile-one-drive">
-            <div class="delete-trigger" onclick="widgets.remove(this)">−</div>
-            <a href="https://onedrive.live.com" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; text-decoration:none; color:white; font-weight:700; font-size:1.1rem;">OneDrive</a>
+        <div class="tile" style="grid-column: span 2;" data-id="wid-onedrive">
+            <div class="btn-delete" onclick="titan.removeWidget(this)">−</div>
+            <a href="https://onedrive.live.com" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; text-decoration:none; color:white; font-weight:800; font-size:1.1rem;">OneDrive</a>
         </div>
 
-        <div class="tile" style="grid-column: span 2;" data-id="tile-vidbox">
-            <div class="delete-trigger" onclick="widgets.remove(this)">−</div>
-            <a href="https://vidbox.de" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; text-decoration:none; color:white; font-weight:700; font-size:1.1rem;">Vidbox</a>
+        <div class="tile" style="grid-column: span 2;" data-id="wid-vidbox">
+            <div class="btn-delete" onclick="titan.removeWidget(this)">−</div>
+            <a href="https://vidbox.de" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; text-decoration:none; color:white; font-weight:800; font-size:1.1rem;">Vidbox</a>
         </div>
 
-        <div class="tile" style="grid-column: span 4; grid-row: span 2;" data-id="tile-calendar">
-            <div class="delete-trigger" onclick="widgets.remove(this)">−</div>
-            <div class="widget-label">Shared Calendar</div>
+        <div class="tile" style="grid-column: span 4; grid-row: span 2;" data-id="wid-calendar">
+            <div class="btn-delete" onclick="titan.removeWidget(this)">−</div>
+            <div class="label-wrap">Shared Calendar</div>
             <iframe src="https://calendar.google.com/calendar/embed?src=en.dutch%23holiday%40group.v.calendar.google.com&ctz=Europe%2FAmsterdam"></iframe>
         </div>
 
-        <div class="tile" style="grid-column: span 4; grid-row: span 2;" data-id="tile-notes">
-            <div class="delete-trigger" onclick="widgets.remove(this)">−</div>
-            <div class="widget-label">Family Cloud Notes <div class="sync-blob" id="sync-dot"></div></div>
-            <textarea id="cloud-notes-area" placeholder="Write a note to the family..."></textarea>
+        <div class="tile" style="grid-column: span 4; grid-row: span 2;" data-id="wid-notes">
+            <div class="btn-delete" onclick="titan.removeWidget(this)">−</div>
+            <div class="label-wrap">Family Cloud Notes <div class="cloud-status" id="sync-indicator"></div></div>
+            <textarea id="family-textarea" placeholder="Start typing..."></textarea>
         </div>
 
-        <div class="tile" style="grid-column: span 4; grid-row: span 2;" data-id="tile-scores">
-            <div class="delete-trigger" onclick="widgets.remove(this)">−</div>
-            <div class="widget-label">Football Scores</div>
-            <div style="flex:1; display:flex; align-items:center; justify-content:center; color:#444; font-size:0.9rem;">
-                Monitoring live match data...
-            </div>
+        <div class="tile" style="grid-column: span 4; grid-row: span 2;" data-id="wid-football">
+            <div class="btn-delete" onclick="titan.removeWidget(this)">−</div>
+            <div class="label-wrap">Football Scores</div>
+            <div style="flex:1; display:flex; align-items:center; justify-content:center; color:#333; font-weight:700;">No matches in-play</div>
         </div>
 
     </div>
 
     <script>
-        /* --- HUB ENGINE ---
-           Handles Cloud Sync, Grid Layout, and UI States.
+        /* ================================================================
+           TITAN K-OS CORE ENGINE
+           ================================================================
         */
 
-        // 1. DATA CONFIG
-        const CONFIG = {
-            PANTRY_ID: "94635661-89e8-466d-965a-0761e3893322",
-            BASKET: "family_notes_elite",
-            SYNC_INTERVAL: 10000, // 10 seconds
-            HOLD_THRESHOLD: 800   // 0.8s for jiggle mode
+        const PANTRY_ID = "94635661-89e8-466d-965a-0761e3893322";
+        const BASKET = "titan_notes_sync";
+        const gridElement = document.getElementById('main-grid');
+        const menuElement = document.getElementById('titan-menu');
+        
+        // MANIFEST: Defines what widgets look like so they can be re-created
+        const WIDGET_MANIFEST = {
+            "wid-header": { name: "System Header", col: "span 8", row: "span 1", html: `<div class="btn-delete" onclick="titan.removeWidget(this)">−</div><div class="user-block"><img id="avatar-frame" src="${localStorage.getItem('active_pic') || ''}" alt="User"><div style="font-weight: 800; font-size: 1.3rem;">Welcome back</div></div><div class="clock-block"><div id="digital-time">00:00</div><div id="digital-date">...</div></div><div class="action-block"><button class="btn-ios" onclick="location.href='https://khristiankorir0123-gif.github.io/login-screen/'">Switch</button></div>` },
+            "wid-onedrive": { name: "OneDrive App", col: "span 2", row: "span 1", html: `<div class="btn-delete" onclick="titan.removeWidget(this)">−</div><a href="https://onedrive.live.com" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; text-decoration:none; color:white; font-weight:800; font-size:1.1rem;">OneDrive</a>` },
+            "wid-vidbox": { name: "Vidbox App", col: "span 2", row: "span 1", html: `<div class="btn-delete" onclick="titan.removeWidget(this)">−</div><a href="https://vidbox.de" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; text-decoration:none; color:white; font-weight:800; font-size:1.1rem;">Vidbox</a>` },
+            "wid-calendar": { name: "Google Calendar", col: "span 4", row: "span 2", html: `<div class="btn-delete" onclick="titan.removeWidget(this)">−</div><div class="label-wrap">Shared Calendar</div><iframe src="https://calendar.google.com/calendar/embed?src=en.dutch%23holiday%40group.v.calendar.google.com&ctz=Europe%2FAmsterdam"></iframe>` },
+            "wid-notes": { name: "Family Cloud Notes", col: "span 4", row: "span 2", html: `<div class="btn-delete" onclick="titan.removeWidget(this)">−</div><div class="label-wrap">Family Cloud Notes <div class="cloud-status" id="sync-indicator"></div></div><textarea id="family-textarea" placeholder="Start typing..."></textarea>` },
+            "wid-football": { name: "Football Scores", col: "span 4", row: "span 2", html: `<div class="btn-delete" onclick="titan.removeWidget(this)">−</div><div class="label-wrap">Football Scores</div><div style="flex:1; display:flex; align-items:center; justify-content:center; color:#333; font-weight:700;">No matches in-play</div>` }
         };
 
-        const ui = {
-            toggleMenu: () => {
-                const menu = document.getElementById('master-settings');
-                menu.classList.toggle('visible');
-            }
-        };
-
-        // 2. CLOUD SYNC ENGINE
-        const cloud = {
-            url: `https://getpantry.cloud/apiv1/pantry/${CONFIG.PANTRY_ID}/basket/${CONFIG.BASKET}`,
-            area: document.getElementById('cloud-notes-area'),
-            dot: document.getElementById('sync-dot'),
-
-            pull: async () => {
-                try {
-                    const res = await fetch(cloud.url);
-                    const data = await res.json();
-                    if (document.activeElement !== cloud.area) {
-                        cloud.area.value = data.content || "";
-                        cloud.flashDot();
-                    }
-                } catch (e) { console.warn("Cloud offline"); }
-            },
-
-            push: async () => {
-                cloud.dot.style.opacity = "1";
-                cloud.dot.style.background = "#ff9500";
-                try {
-                    await fetch(cloud.url, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ content: cloud.area.value })
-                    });
-                    cloud.dot.style.background = "#34c759";
-                    setTimeout(() => cloud.dot.style.opacity = "0", 2000);
-                } catch (e) { cloud.dot.style.background = "#ff3b30"; }
-            },
-
-            flashDot: () => {
-                cloud.dot.style.opacity = "1";
-                setTimeout(() => cloud.dot.style.opacity = "0", 1000);
-            }
-        };
-
-        // 3. LAYOUT & DRAG ENGINE
-        const layout = {
-            grid: document.getElementById('master-grid'),
+        const titan = {
             sortable: null,
-            timer: null,
+            syncTimer: null,
 
-            initEdit: () => {
-                document.body.className = "mode-editing";
-                layout.sortable = Sortable.create(layout.grid, {
-                    animation: 300,
-                    easing: "cubic-bezier(0.4, 0, 0.2, 1)",
-                    onEnd: layout.save
+            toggleMenu: () => {
+                titan.refreshLibrary();
+                menuElement.classList.toggle('active');
+            },
+
+            // --- LIBRARY LOGIC ---
+            // Scans the screen and sees what's missing compared to the Manifest
+            refreshLibrary: () => {
+                const libraryDiv = document.getElementById('available-widgets');
+                libraryDiv.innerHTML = "";
+                
+                Object.keys(WIDGET_MANIFEST).forEach(id => {
+                    const exists = document.querySelector(`[data-id="${id}"]`);
+                    if (!exists) {
+                        const btn = document.createElement('button');
+                        btn.className = "menu-row";
+                        btn.innerHTML = `➕ Add ${WIDGET_MANIFEST[id].name}`;
+                        btn.onclick = () => titan.addWidget(id);
+                        libraryDiv.appendChild(btn);
+                    }
                 });
-                ui.toggleMenu();
+
+                if(libraryDiv.innerHTML === "") {
+                    libraryDiv.innerHTML = "<p style='color:#444; padding:10px;'>All widgets are active.</p>";
+                }
+            },
+
+            addWidget: (id) => {
+                const data = WIDGET_MANIFEST[id];
+                const tile = document.createElement('div');
+                tile.className = "tile";
+                tile.style.gridColumn = data.col;
+                tile.style.gridRow = data.row;
+                tile.setAttribute('data-id', id);
+                tile.innerHTML = data.html;
+                
+                gridElement.appendChild(tile);
+                titan.saveLayout();
+                titan.refreshLibrary();
+                
+                // Re-init special logic if it's notes
+                if(id === "wid-notes") titan.initNotes();
+            },
+
+            removeWidget: (btn) => {
+                btn.closest('.tile').remove();
+                titan.saveLayout();
+            },
+
+            // --- CLOUD SYNC ---
+            initNotes: () => {
+                const area = document.getElementById('family-textarea');
+                if(!area) return;
+                
+                area.addEventListener('input', () => {
+                    clearTimeout(titan.syncTimer);
+                    titan.syncTimer = setTimeout(titan.pushNotes, 1500);
+                });
+                
+                titan.pullNotes();
+                setInterval(titan.pullNotes, 12000);
+            },
+
+            pullNotes: async () => {
+                const area = document.getElementById('family-textarea');
+                const dot = document.getElementById('sync-indicator');
+                if(!area) return;
+                try {
+                    const res = await fetch(`https://getpantry.cloud/apiv1/pantry/${PANTRY_ID}/basket/${BASKET}`);
+                    const data = await res.json();
+                    if(document.activeElement !== area) area.value = data.text || "";
+                    if(dot) { dot.style.opacity = "1"; setTimeout(()=>dot.style.opacity="0", 800); }
+                } catch(e){}
+            },
+
+            pushNotes: async () => {
+                const area = document.getElementById('family-textarea');
+                const dot = document.getElementById('sync-indicator');
+                if(dot) dot.style.background = "#ff9500";
+                try {
+                    await fetch(`https://getpantry.cloud/apiv1/pantry/${PANTRY_ID}/basket/${BASKET}`, {
+                        method: 'POST', headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ text: area.value })
+                    });
+                    if(dot) dot.style.background = "#34c759";
+                } catch(e){}
+            },
+
+            // --- LAYOUT PERSISTENCE ---
+            saveLayout: () => {
+                const order = Array.from(gridElement.children).map(t => t.getAttribute('data-id'));
+                localStorage.setItem('titan-layout-v6', JSON.stringify(order));
+            },
+
+            restoreLayout: () => {
+                const saved = JSON.parse(localStorage.getItem('titan-layout-v6'));
+                if (saved) {
+                    // First, clear current (except what was saved)
+                    const currentTiles = Array.from(gridElement.children);
+                    
+                    // Add saved tiles back in order
+                    saved.forEach(id => {
+                        const target = currentTiles.find(t => t.getAttribute('data-id') === id);
+                        if (target) {
+                            gridElement.appendChild(target);
+                        } else if(WIDGET_MANIFEST[id]) {
+                            // If it's in the manifest but was deleted before save, don't auto-add
+                            // but if it's missing from screen but IN the save, re-create it.
+                            titan.addWidget(id);
+                        }
+                    });
+
+                    // Remove anything not in the save
+                    currentTiles.forEach(t => {
+                        if(!saved.includes(t.getAttribute('data-id'))) t.remove();
+                    });
+                }
+            },
+
+            enterEdit: () => {
+                document.body.className = "mode-edit";
+                gridElement.classList.remove('is-live');
+                titan.sortable = Sortable.create(gridElement, { 
+                    animation: 400, 
+                    easing: "cubic-bezier(0.2, 0, 0, 1)",
+                    onEnd: titan.saveLayout 
+                });
+                titan.toggleMenu();
             },
 
             exitEdit: () => {
-                if (document.body.className !== "mode-editing") return;
-                document.body.className = "mode-normal";
-                if (layout.sortable) {
-                    layout.save();
-                    layout.sortable.destroy();
+                document.body.className = "mode-live";
+                gridElement.classList.add('is-live');
+                if(titan.sortable) {
+                    titan.saveLayout();
+                    titan.sortable.destroy();
                 }
             },
 
-            save: () => {
-                const order = Array.from(layout.grid.children).map(t => t.getAttribute('data-id'));
-                localStorage.setItem('k-os-layout-v4', JSON.stringify(order));
-            },
-
-            restore: () => {
-                const saved = JSON.parse(localStorage.getItem('k-os-layout-v4'));
-                if (saved) {
-                    const tiles = Array.from(layout.grid.children);
-                    saved.forEach(id => {
-                        const target = tiles.find(t => t.getAttribute('data-id') === id);
-                        if (target) layout.grid.appendChild(target);
-                    });
-                }
-            },
-
-            reset: () => {
-                localStorage.removeItem('k-os-layout-v4');
+            factoryReset: () => {
+                localStorage.clear();
                 location.reload();
             }
         };
 
-        // 4. WIDGET CREATOR
-        const widgets = {
-            create: (type) => {
-                const id = `custom-${Date.now()}`;
-                const tile = document.createElement('div');
-                tile.className = "tile";
-                tile.style.gridColumn = "span 4";
-                tile.style.gridRow = "span 2";
-                tile.setAttribute('data-id', id);
-
-                const del = `<div class="delete-trigger" onclick="widgets.remove(this)">−</div>`;
-
-                if (type === 'iframe') {
-                    const url = prompt("Enter URL:", "https://bing.com");
-                    tile.innerHTML = `${del}<div class="widget-label">Web View</div><iframe src="${url}"></iframe>`;
-                } else if (type === 'text') {
-                    tile.innerHTML = `${del}<div class="widget-label">Personal Note</div><textarea style="flex:1; background:transparent; border:none; color:white; padding:20px; font-family:inherit; outline:none;"></textarea>`;
-                } else if (type === 'image') {
-                    const src = prompt("Image URL:");
-                    tile.innerHTML = `${del}<img src="${src}" style="width:100%; height:100%; object-fit:cover;">`;
-                }
-
-                layout.grid.appendChild(tile);
-                ui.toggleMenu();
-            },
-            remove: (btn) => {
-                btn.closest('.tile').remove();
-                layout.save();
-            }
-        };
-
-        // 5. CLOCK & BOOT
-        function boot() {
-            // Update Time
+        // --- CLOCK & INITIALIZATION ---
+        function runClock() {
             const tick = () => {
                 const now = new Date();
-                document.getElementById('clock-digital').textContent = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-                document.getElementById('date-display').textContent = now.toLocaleDateString('en-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+                const timeEl = document.getElementById('digital-time');
+                const dateEl = document.getElementById('digital-date');
+                if(timeEl) timeEl.textContent = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+                if(dateEl) dateEl.textContent = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
             };
             setInterval(tick, 1000); tick();
-
-            // Load Profile
-            const pic = localStorage.getItem('active_pic');
-            if (pic) document.getElementById('user-avatar').src = pic;
-
-            // Restore Grid
-            layout.restore();
-
-            // Start Sync
-            cloud.pull();
-            setInterval(cloud.pull, CONFIG.SYNC_INTERVAL);
-
-            // Listeners
-            cloud.area.addEventListener('input', () => {
-                clearTimeout(cloud.timer);
-                cloud.timer = setTimeout(cloud.push, 2000);
-            });
-
-            // Long Press Logic
-            document.addEventListener('mousedown', (e) => {
-                if (document.body.className === "mode-editing") return;
-                layout.timer = setTimeout(layout.initEdit, CONFIG.HOLD_THRESHOLD);
-            });
-            document.addEventListener('mouseup', () => clearTimeout(layout.timer));
-
-            // Background Click to Exit
-            document.addEventListener('click', (e) => {
-                if (e.target === layout.grid && document.body.className === "mode-editing") {
-                    layout.exitEdit();
-                }
-            });
         }
 
-        window.onload = boot;
+        window.onload = () => {
+            runClock();
+            
+            // Set Avatar
+            const avatar = document.getElementById('avatar-frame');
+            if(avatar) avatar.src = localStorage.getItem('active_pic') || '';
+
+            // Grid Boot
+            titan.restoreLayout();
+            titan.initNotes();
+
+            // Interaction Listeners
+            let longPress;
+            document.addEventListener('mousedown', () => {
+                if(document.body.className === "mode-edit") return;
+                longPress = setTimeout(titan.enterEdit, 900);
+            });
+            document.addEventListener('mouseup', () => clearTimeout(longPress));
+
+            document.addEventListener('click', (e) => {
+                if(e.target === gridElement && document.body.className === "mode-edit") {
+                    titan.exitEdit();
+                }
+            });
+        };
     </script>
 </body>
 </html>
